@@ -79,6 +79,25 @@ export function dayType(d = new Date()) {
   return 'repos'
 }
 
+// Libellé du cycle d'entraînement (9 semaines : 8 actives + 1 décharge).
+export function cycleLabel(cycleStart) {
+  const w = Math.floor(daysBetween(cycleStart || dateKey(), dateKey()) / 7)
+  const pos = ((w % 9) + 9) % 9
+  return pos < 8 ? `Semaine ${pos + 1}/8` : 'Semaine de décharge'
+}
+
+// Variante tenant compte d'une période "cycle" manuelle posée dans l'agenda.
+export function cycleLabelFor(agendaDoc, k) {
+  const ag = (agendaDoc && agendaDoc.agenda) || {}
+  const cur = (ag.periods || []).find(p => p.kind === 'cycle' && inRange(k, p.start, p.end))
+  if (cur) {
+    if (cur.catId === 'off') return 'Semaine de décharge'
+    const wk = Math.floor(daysBetween(cur.start, k) / 7) + 1
+    return `Semaine ${wk}`
+  }
+  return cycleLabel((agendaDoc && agendaDoc.cycleStart) || dateKey())
+}
+
 export async function loadAgendaDoc(userId) {
   const ref = doc(db, COL, userId, 'app', 'agenda')
   const snap = await getDoc(ref)

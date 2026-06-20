@@ -7,6 +7,7 @@ import { DEFAULT_PROFILE } from './lib/defaults'
 import { Tabs, Spinner, Button, Input, Card } from './components/UI'
 import { ConfirmHost } from './components/ConfirmHost'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
+import { applyTheme } from './lib/theme'
 import SeanceTab    from './pages/SeanceTab'
 import NutritionTab from './pages/NutritionTab'
 import SuiviTab     from './pages/SuiviTab'
@@ -83,6 +84,11 @@ export default function App() {
   const [profile, setProfile] = useState(null)
   const [tab, setTab]         = useState('seance')
   const online                = useOnlineStatus()
+
+  // Applique le thème / accent dès que le profil est disponible.
+  useEffect(() => {
+    if (profile) applyTheme(profile.theme, profile.accent)
+  }, [profile?.theme, profile?.accent])
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {

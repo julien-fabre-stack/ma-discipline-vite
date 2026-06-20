@@ -1,28 +1,32 @@
-import { useCallback, useRef } from 'react'
+import { useRef, useCallback } from 'react'
 
+// Bip court via Web Audio. API : const { ensure, beep } = useBeep()
+// ensure() : (ré)active le contexte audio (à appeler sur une interaction). beep(freq, durSeconds).
 export function useBeep() {
-  const ctxRef = useRef(null)
+  const ref = useRef(null)
 
-  const beep = useCallback((frequency = 880, duration = 150, volume = 0.3) => {
-    try {
-      if (!ctxRef.current || ctxRef.current.state === 'closed') {
-        ctxRef.current = new (window.AudioContext || window.webkitAudioContext)()
-      }
-      const ctx = ctxRef.current
-      const osc  = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = frequency
-      osc.type = 'sine'
-      gain.gain.setValueAtTime(volume, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000)
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + duration / 1000)
-    } catch (e) {
-      console.warn('useBeep: AudioContext non disponible', e)
+  const ensure = useCallback(() => {
+    if (!ref.current) {
+      try { ref.current = new (window.AudioContext || window.webkitAudioContext)() } catch (e) {}
     }
+    if (ref.current && ref.current.state === 'suspended') ref.current.resume()
   }, [])
 
-  return beep
+  const beep = useCallback((freq = 880, dur = 0.15) => {
+    try {
+      const ac = ref.current
+      if (!ac) return
+      const o = ac.createOscillator()
+      const g = ac.createGain()
+      o.frequency.value = freq
+      o.connect(g); g.connect(ac.destination)
+      g.gain.setValueAtTime(0.0001, ac.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.5, ac.currentTime + 0.01)
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
+      o.start()
+      o.stop(ac.currentTime + dur)
+    } catch (e) {}
+  }, [])
+
+  return { ensure, beep }
 }

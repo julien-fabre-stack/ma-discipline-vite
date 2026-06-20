@@ -1,103 +1,91 @@
 import { useState, useEffect, useRef } from 'react'
-import { Button, Card } from '../components/UI'
+import Icon from '../components/Icon'
+import Ring from '../components/Ring'
+import ExerciseImg from '../components/ExerciseImg'
 import { useBeep } from '../hooks/useBeep'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { formatDuration } from '../lib/utils'
+import { fmt } from '../lib/utils'
 
-const MODES = [
-  { id: 'amrap',   label: 'AMRAP',   desc: 'Max rounds en temps limite' },
-  { id: 'fortime', label: 'For Time', desc: 'Terminer le plus vite possible' },
-  { id: 'emom',    label: 'EMOM',    desc: 'Chaque minute, une tache' },
-  { id: 'tabata',  label: 'Tabata',  desc: '20s effort / 10s repos x8' },
-]
+// Lanceur de WOD : échauffement (10 burpees + 10 remises debout) puis AMRAP chronométré.
+export default function WodRunner({ wod, onClose, onDone }) {
+  const safeWod = wod || { name: 'WOD', dur: 900, items: [] }
+  const [phase, setPhase] = useState('warm1')   // warm1 -> warm2 -> amrap
+  const [sec, setSec] = useState(safeWod.dur || 900)
+  const [run, setRun] = useState(false)
+  const { ensure, beep } = useBeep()
+  const tickRef = useRef(null)
 
-export default function WodRunner({ onClose }) {
-  const [mode, setMode]         = useState(null)
-  const [duration, setDuration] = useState(600)
-  const [timer, setTimer]       = useState(0)
-  const [running, setRunning]   = useState(false)
-  const [rounds, setRounds]     = useState(0)
-  const intervalRef             = useRef(null)
-  const beep                    = useBeep()
-
-  useWakeLock(running)
+  useWakeLock(true)
+  useEffect(() => { ensure() }, [])
 
   useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (!running) return
-    intervalRef.current = setInterval(() => {
-      setTimer(t => {
-        if (mode === 'amrap' || mode === 'emom') {
-          if (t + 1 >= duration) { setRunning(false); beep(440, 500); return duration }
-          if (mode === 'emom' && (t + 1) % 60 === 0) beep(880, 200)
-          return t + 1
-        }
-        if (mode === 'fortime') return t + 1
-        if (mode === 'tabata') {
-          const cycle = 30
-          if ((t + 1) % cycle === 20) beep(440, 150)
-          if ((t + 1) % cycle === 0)  { beep(880, 200); setRounds(r => r + 1) }
-          if (t + 1 >= cycle * 8)     { setRunning(false); beep(440, 500); return cycle * 8 }
-          return t + 1
-        }
-        return t
+    clearInterval(tickRef.current)
+    if (phase !== 'amrap' || !run) return
+    tickRef.current = setInterval(() => {
+      setSec(s => {
+        const nr = s - 1
+        if (nr <= 5 && nr >= 1) beep(820, 0.09)
+        if (nr <= 0) { clearInterval(tickRef.current); beep(440, 0.5); setRun(false); return 0 }
+        return nr
       })
     }, 1000)
-    return () => clearInterval(intervalRef.current)
-  }, [running, mode, duration, beep])
+    return () => clearInterval(tickRef.current)
+  }, [phase, run])
 
-  const toggle = () => { if (!mode) return; setRunning(r => !r) }
-  const reset  = () => { setRunning(false); setTimer(0); setRounds(0) }
-
-  if (!mode) return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-text">WOD Runner</h2>
-        <Button variant="ghost" onClick={onClose}>Fermer</Button>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {MODES.map(m => (
-          <Card key={m.id} className="cursor-pointer hover:border-ember transition-colors text-center" onClick={() => setMode(m.id)}>
-            <p className="font-bold text-gold">{m.label}</p>
-            <p className="text-xs text-muted mt-1">{m.desc}</p>
-          </Card>
-        ))}
-      </div>
-    </div>
-  )
-
-  const tabataPhase = mode === 'tabata' ? (timer % 30 < 20 ? 'EFFORT' : 'REPOS') : null
-  const display     = (mode === 'amrap' || mode === 'emom') ? formatDuration(duration - timer) : formatDuration(timer)
+  const isWarm = phase === 'warm1' || phase === 'warm2'
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-text">{MODES.find(m => m.id === mode)?.label}</h2>
-        <Button variant="ghost" onClick={() => { reset(); setMode(null) }}>Retour</Button>
+    <div className="fixed inset-0 z-50 flex flex-col bg-night text-text">
+      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-surface"><Icon name="x" size={20} className="text-muted" /></button>
+        <div className="text-xs tracking-widest uppercase text-gold">{safeWod.name}</div>
+        <div style={{ width: 36 }} />
       </div>
-      <Card className="text-center py-8">
-        {tabataPhase && <p className={'text-sm font-bold mb-2 ' + (tabataPhase === 'EFFORT' ? 'text-danger' : 'text-gold')}>{tabataPhase}</p>}
-        <p className="text-6xl font-mono font-bold text-text">{display}</p>
-        {mode === 'tabata' && <p className="text-muted mt-2">Round {Math.floor(timer / 30) + 1}/8</p>}
-        {mode === 'amrap'  && <p className="text-muted mt-2">Rounds : {rounds}</p>}
-      </Card>
-      {(mode === 'amrap' || mode === 'emom') && (
-        <div className="flex gap-2 items-center">
-          <label className="text-xs text-muted whitespace-nowrap">Duree (min)</label>
-          <input type="range" min="60" max="3600" step="60" value={duration}
-            onChange={e => { setDuration(Number(e.target.value)); reset() }}
-            className="flex-1 accent-ember" />
-          <span className="text-xs text-gold w-10 text-right">{duration / 60}min</span>
-        </div>
-      )}
-      {mode === 'amrap' && running && (
-        <Button variant="secondary" onClick={() => setRounds(r => r + 1)}>+ Round</Button>
-      )}
-      <div className="flex gap-3">
-        <Button className="flex-1" onClick={toggle} variant={running ? 'warning' : 'primary'}>
-          {running ? 'Pause' : timer > 0 ? 'Reprendre' : 'Demarrer'}
-        </Button>
-        <Button variant="ghost" onClick={reset}>Reset</Button>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        {isWarm && (
+          <>
+            <div className="mb-3 px-3 py-1 rounded-full text-xs tracking-wider uppercase bg-surface text-gold">Échauffement</div>
+            {phase === 'warm1' && <ExerciseImg name="Burpees" className="w-32 h-32 object-contain rounded-2xl mb-2 bg-surface" />}
+            {phase === 'warm2' && <ExerciseImg name="Remises debout" className="w-32 h-32 object-contain rounded-2xl mb-2 bg-surface" />}
+            <div className="text-3xl font-bold max-w-xs">{phase === 'warm1' ? 'Burpees' : 'Remises debout'}</div>
+            <div className="mt-4 text-5xl font-extrabold text-dawn">10</div>
+            <button
+              onClick={() => setPhase(phase === 'warm1' ? 'warm2' : 'amrap')}
+              className="mt-10 w-full max-w-xs py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-dawn text-night shadow-glow"
+            >
+              <Icon name="check" size={22} /> Terminé
+            </button>
+          </>
+        )}
+
+        {phase === 'amrap' && (
+          <>
+            <div className="flex items-center gap-2 mb-1 text-gold">
+              <Icon name="flame" size={18} />
+              <span className="tracking-widest uppercase text-xs">AMRAP {Math.round((safeWod.dur || 900) / 60)} min · max de tours</span>
+            </div>
+            <div className="relative flex items-center justify-center my-2">
+              <Ring value={sec} max={safeWod.dur || 900} id="gw" />
+              <div className="absolute text-5xl font-bold tabular-nums">{fmt(sec)}</div>
+            </div>
+            <div className="w-full max-w-xs rounded-2xl p-4 mb-5 text-left bg-surface">
+              {(safeWod.items || []).map((m, i) => (
+                <div key={i} className="flex justify-between py-1.5" style={{ borderBottom: i < safeWod.items.length - 1 ? '1px solid var(--color-line)' : 'none' }}>
+                  <span>{m.name}</span>
+                  <span className="font-bold text-gold">×{m.reps}</span>
+                </div>
+              ))}
+              {(safeWod.items || []).length === 0 && <p className="text-sm text-muted text-center">Aucun exercice dans ce WOD.</p>}
+            </div>
+            <button onClick={() => setRun(r => !r)} className="w-full max-w-xs py-3 rounded-2xl font-bold flex items-center justify-center gap-2 bg-dawn text-night shadow-glow">
+              <Icon name={run ? 'pause' : 'play'} size={18} /> {run ? 'Pause' : 'Lancer le chrono'}
+            </button>
+            <button onClick={onDone} className="mt-4 w-full max-w-xs py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-ok text-night">
+              <Icon name="trophy" size={20} /> WOD terminé
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

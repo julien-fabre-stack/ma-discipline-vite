@@ -1,75 +1,27 @@
 import { useState, useEffect } from 'react'
-import { Card, Button, EmptyState, Modal, Input } from '../components/UI'
-import { loadWorkoutsDoc, saveWorkoutsDoc, workoutForDay } from '../lib/workouts'
-import { DEFAULT_EXERCICE } from '../lib/defaults'
-import { uid } from '../lib/utils'
-import { confirm } from '../components/ConfirmHost'
+import Icon from '../components/Icon'
+import { Collapsible } from '../components/Collapsible'
 import Runner from './Runner'
 import WodRunner from './WodRunner'
-import ExerciseRow from '../components/ExerciseRow'
+import { loadWorkoutsDoc, saveWorkoutsDoc, workoutForDay } from '../lib/workouts'
+import { loadAgendaDoc, saveAgendaDoc, cycleLabelFor, dateKey } from '../lib/agenda'
 
-const pad = n => String(n).padStart(2, '0')
-const dateKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+const WD = [['Lundi', 1], ['Mardi', 2], ['Mercredi', 3], ['Jeudi', 4], ['Vendredi', 5], ['Samedi', 6], ['Dimanche', 0]]
 
 export default function SeanceTab({ user }) {
   const today = dateKey()
-  const [doc, setDoc]               = useState(null)
-  const [loading, setLoading]       = useState(true)
-  const [showModal, setShowModal]   = useState(false)
-  const [editWorkout, setEditWorkout] = useState(null)
-  const [activeRun, setActiveRun]   = useState(null)
-  const [showWod, setShowWod]       = useState(false)
+  const [wDoc, setWDoc]   = useState(null)
+  const [aDoc, setADoc]   = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [run, setRun]     = useState(null)   // { startIdx }
+  const [wod, setWod]     = useState(null)    // wod en cours
+  const [openWeek, setOpenWeek] = useState(false)
 
   useEffect(() => {
     if (!user) return
-    loadWorkoutsDoc(user.uid).then(d => { setDoc(d); setLoading(false) })
+    Promise.all([loadWorkoutsDoc(user.uid), loadAgendaDoc(user.uid)])
+      .then(([w, a]) => { setWDoc(w); setADoc(a); setLoading(false) })
   }, [user])
-
-  const workouts = doc?.workouts || []
-  const weekTemplate = doc?.weekTemplate || {}
-  const todayWorkout = doc ? workoutForDay(doc, today) : null
-
-  const save = async (patch) => {
-    const next = { ...doc, ...patch }
-    setDoc(next)
-    await saveWorkoutsDoc(user.uid, patch)
-  }
-
-  const openNew = () => {
-    setEditWorkout({ id: uid(), name: 'Nouvelle seance', exercices: [{ ...DEFAULT_EXERCICE, id: uid(), repos: 60, poids: 0 }] })
-    setShowModal(true)
-  }
-  const openEdit = (w) => { setEditWorkout({ ...w }); setShowModal(true) }
-
-  const handleSave = async () => {
-    const exists = workouts.some(w => w.id === editWorkout.id)
-    const next = exists ? workouts.map(w => w.id === editWorkout.id ? editWorkout : w) : [...workouts, editWorkout]
-    await save({ workouts: next })
-    setShowModal(false)
-  }
-
-  const handleDelete = async (id) => {
-    const ok = await confirm('Supprimer cette seance ?', 'Supprimer')
-    if (!ok) return
-    const nextTemplate = { ...weekTemplate }
-    Object.keys(nextTemplate).forEach(d => { if (nextTemplate[d] === id) delete nextTemplate[d] })
-    await save({ workouts: workouts.filter(w => w.id !== id), weekTemplate: nextTemplate })
-  }
-
-  const handleComplete = async (duree) => {
-    if (!activeRun) return
-    const next = workouts.map(w => w.id === activeRun.id ? { ...w, lastRun: new Date().toISOString(), lastDuree: duree } : w)
-    await save({ workouts: next })
-    setActiveRun(null)
-  }
-
-  if (activeRun) {
-    return <Runner seance={activeRun} onClose={() => setActiveRun(null)} onComplete={handleComplete} />
-  }
-
-  if (showWod) {
-    return <WodRunner onClose={() => setShowWod(false)} />
-  }
 
   if (loading) return (
     <div className="flex justify-center py-20">
@@ -77,126 +29,121 @@ export default function SeanceTab({ user }) {
     </div>
   )
 
+  const workouts = wDoc?.workouts || []
+  const wt = wDoc?.weekTemplate || {}
+  const todayWorkout = wDoc ? workoutForDay(wDoc, today) : null
+  const progress = wDoc?.progress
+  const hasProg = progress && progress.idx > 0 && todayWorkout
+  const wods = aDoc?.wods || []
+  const todayWd = new Date().getDay()
+  const nameOf = (wid) => { const w = workouts.find(x => x.id === wid); return w ? w.name : null }
+
+  const day = (aDoc?.days || {})[today] || {}
+  const sportDone = day.habits && !Array.isArray(day.habits) && day.habits.sport
+
+  const saveW = async (patch) => { const next = { ...wDoc, ...patch }; setWDoc(next); await saveWorkoutsDoc(user.uid, patch) }
+  const saveA = async (patch) => { const next = { ...aDoc, ...patch }; setADoc(next); await saveAgendaDoc(user.uid, patch) }
+
+  const onProgress = (idx) => { saveW({ progress: { idx } }) }
+  const onSeanceDone = () => { saveW({ progress: null }); markSport(true); setRun(null) }
+
+  const markSport = async (force) => {
+    const cur = (aDoc?.days || {})[today] || {}
+    const habits = (cur.habits && !Array.isArray(cur.habits)) ? cur.habits : {}
+    const nextVal = force ? true : !habits.sport
+    const nextDays = { ...(aDoc?.days || {}), [today]: { ...cur, habits: { ...habits, sport: nextVal } } }
+    await saveA({ days: nextDays })
+  }
+
+  if (run) {
+    return (
+      <Runner
+        seance={todayWorkout}
+        startIdx={run.startIdx || 0}
+        onClose={() => setRun(null)}
+        onProgress={onProgress}
+        onComplete={onSeanceDone}
+      />
+    )
+  }
+  if (wod) {
+    return <WodRunner wod={wod} onClose={() => setWod(null)} onDone={() => { markSport(true); setWod(null) }} />
+  }
+
   return (
-    <div className="space-y-4">
-      {/* Seance du jour (selon semaine type) */}
-      <div>
-        <p className="text-xs text-muted uppercase tracking-wide mb-2">Aujourd'hui</p>
-        {todayWorkout ? (
-          <Card className="border-ember/60">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-text">{todayWorkout.name}</p>
-                <p className="text-xs text-muted">{todayWorkout.exercices?.length || 0} exercice(s)</p>
-              </div>
-              <Button variant="success" onClick={() => setActiveRun(todayWorkout)}>Demarrer</Button>
-            </div>
-          </Card>
-        ) : (
-          <Card className="text-center py-4">
-            <p className="text-sm text-muted">Pas de seance prevue aujourd'hui. Profite du repos.</p>
-          </Card>
-        )}
-      </div>
-
-      {/* WOD Runner */}
-      <Card className="flex items-center justify-between">
+    <div className="pb-4">
+      {/* Entête : date + workout du jour + cycle */}
+      <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="font-bold text-text flex items-center gap-2">🔥 WOD</p>
-          <p className="text-xs text-muted">AMRAP, For Time, EMOM, Tabata</p>
+          <div className="text-xs tracking-widest uppercase mb-1 text-muted">
+            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-1 text-text">{todayWorkout ? todayWorkout.name : 'Repos'}</h1>
+          <div className="text-sm text-gold">{cycleLabelFor(aDoc, today)}</div>
         </div>
-        <Button variant="secondary" onClick={() => setShowWod(true)}>Lancer un WOD</Button>
-      </Card>
-
-      {/* Bibliotheque complete */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text">Mes seances</h2>
-        <Button onClick={openNew}>+ Nouvelle</Button>
       </div>
 
-      {workouts.length === 0
-        ? (
-          <EmptyState
-            title="Aucune seance"
-            subtitle="Cree ta premiere seance pour commencer."
-            action={<Button onClick={openNew}>Creer une seance</Button>}
-          />
-        ) : (
-          <div className="space-y-3">
-            {workouts.map(w => (
-              <Card key={w.id} className="hover:border-surface-2 transition-colors">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEdit(w)}>
-                    <p className="font-semibold text-text truncate">{w.name || 'Seance sans nom'}</p>
-                    <p className="text-xs text-muted mt-0.5">
-                      {w.exercices?.length ? w.exercices.length + ' exercice(s)' : 'Vide'}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    {w.exercices?.length > 0 && (
-                      <Button variant="success" onClick={() => setActiveRun(w)} className="text-xs px-3 py-1.5">
-                        Demarrer
-                      </Button>
-                    )}
-                    <Button variant="ghost" onClick={() => openEdit(w)} className="text-muted px-2">✏️</Button>
-                    <Button variant="ghost" onClick={() => handleDelete(w.id)} className="text-danger hover:text-danger px-2">🗑</Button>
-                  </div>
-                </div>
-                {w.exercices?.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-1.5">
-                    {w.exercices.slice(0, 5).map((ex, i) => (
-                      <span key={i} className="text-xs bg-surface-2 text-muted px-2 py-0.5 rounded-full">
-                        {ex.nom || 'Exercice ' + (i + 1)}
-                      </span>
-                    ))}
-                    {w.exercices.length > 5 && <span className="text-xs text-muted">+{w.exercices.length - 5}</span>}
-                  </div>
-                )}
-              </Card>
-            ))}
+      {/* Carte séance du jour */}
+      {todayWorkout ? (
+        <div className="rounded-3xl p-5 mb-4 bg-surface border border-line">
+          <div className="font-bold mb-1 text-text">{todayWorkout.name}</div>
+          <div className="text-sm mb-4 text-muted">
+            {(todayWorkout.exercices || []).length} exercices · minuteurs auto.{hasProg && ' Séance en cours.'}
           </div>
-        )
-      }
-
-      <p className="text-[11px] text-muted text-center">
-        Pour configurer la semaine type, va dans Reglages → Seances.
-      </p>
-
-      {/* Modal edition */}
-      <Modal open={showModal} onClose={() => setShowModal(false)} title={editWorkout?.name || 'Seance'}>
-        {editWorkout && (
-          <div className="space-y-4">
-            <Input label="Nom de la seance" value={editWorkout.name} onChange={v => setEditWorkout(w => ({ ...w, name: v }))} placeholder="Ex : Full body A" />
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-muted font-medium">Exercices</p>
-                <Button variant="ghost" className="text-xs py-1"
-                  onClick={() => setEditWorkout(w => ({ ...w, exercices: [...(w.exercices || []), { ...DEFAULT_EXERCICE, id: uid(), repos: 60, poids: 0 }] }))}>
-                  + Ajouter
-                </Button>
-              </div>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {(editWorkout.exercices || []).map((ex, idx) => (
-                  <ExerciseRow
-                    key={ex.id || idx}
-                    ex={ex}
-                    idx={idx}
-                    onChange={(i, patch) => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, j) => j === i ? { ...e, ...patch } : e) }))}
-                    onRemove={(i) => setEditWorkout(w => ({ ...w, exercices: w.exercices.filter((_, j) => j !== i) }))}
-                  />
-                ))}
-                {(editWorkout.exercices || []).length === 0 && (
-                  <p className="text-sm text-muted text-center py-3">Aucun exercice. Clique + Ajouter.</p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end pt-2">
-              <Button variant="ghost" onClick={() => setShowModal(false)}>Annuler</Button>
-              <Button onClick={handleSave}>Enregistrer</Button>
-            </div>
+          <div className="flex gap-2">
+            {hasProg && (
+              <button onClick={() => setRun({ startIdx: progress.idx })} className="flex-1 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 bg-dawn text-night shadow-glow">
+                <Icon name="play" size={20} /> Reprendre
+              </button>
+            )}
+            <button
+              onClick={() => setRun({ startIdx: 0 })}
+              className={'flex-1 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 ' + (hasProg ? 'bg-surface-2 text-text' : 'bg-dawn text-night shadow-glow')}
+            >
+              <Icon name={hasProg ? 'skip' : 'play'} size={20} /> {hasProg ? 'Recommencer' : 'Démarrer'}
+            </button>
           </div>
-        )}
-      </Modal>
+        </div>
+      ) : (
+        <div className="rounded-3xl p-5 mb-4 text-center bg-surface border border-line">
+          <div className="text-sm text-muted">Pas de séance prévue aujourd'hui. Profite du repos.</div>
+        </div>
+      )}
+
+      {/* Bibliothèque WOD */}
+      <div className="rounded-3xl p-5 mb-4 bg-surface border border-line">
+        <div className="font-bold mb-1 flex items-center gap-2 text-text"><Icon name="flame" size={18} className="text-gold" /> WOD</div>
+        <div className="text-sm mb-3 text-muted">Échauffement 10 burpees + 10 remises debout, puis le WOD choisi.</div>
+        {wods.length === 0 ? (
+          <div className="text-sm text-gold">Ajoute tes WODs dans Réglages → Training → WOD.</div>
+        ) : wods.map(w => (
+          <button key={w.id} onClick={() => setWod(w)} className="w-full flex items-center justify-between px-4 py-3 rounded-2xl mb-2 bg-surface-2">
+            <span className="text-sm font-medium text-text">{w.name}</span>
+            <Icon name="play" size={18} className="text-gold" />
+          </button>
+        ))}
+      </div>
+
+      {/* Marquer sport */}
+      <button onClick={() => markSport(false)} className={'w-full py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 mb-6 bg-surface-2 ' + (sportDone ? 'text-ok' : 'text-text')}>
+        <Icon name="check" size={18} /> {sportDone ? '« Sport » fait ✓' : 'Marquer « Sport » fait aujourd\'hui'}
+      </button>
+
+      {/* Semaine type */}
+      <Collapsible title="La semaine type" open={openWeek} onToggle={() => setOpenWeek(o => !o)}>
+        <div className="rounded-2xl overflow-hidden border border-line">
+          {WD.map(([lbl, wd], i) => {
+            const nm = nameOf(wt[wd]); const isToday = wd === todayWd
+            return (
+              <div key={wd} className="flex justify-between px-4 py-3 text-sm"
+                style={{ background: isToday ? 'var(--color-surface-2)' : (i % 2 ? 'var(--color-surface)' : 'var(--color-night)'), borderLeft: isToday ? '3px solid var(--color-gold)' : '3px solid transparent' }}>
+                <span style={{ fontWeight: isToday ? 700 : 400, color: isToday ? 'var(--color-gold)' : 'var(--color-text)' }}>{lbl}</span>
+                <span style={{ color: nm ? 'var(--color-text)' : 'var(--color-muted)' }}>{nm || 'Repos'}</span>
+              </div>
+            )
+          })}
+        </div>
+      </Collapsible>
     </div>
   )
 }

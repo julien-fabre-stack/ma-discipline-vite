@@ -1,131 +1,144 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Button, Card, ProgressBar } from '../components/UI'
+import { useState, useEffect, useRef } from 'react'
+import Icon from '../components/Icon'
+import Ring from '../components/Ring'
+import ExerciseImg from '../components/ExerciseImg'
 import { useBeep } from '../hooks/useBeep'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { formatDuration } from '../lib/utils'
-import ExerciseImg from '../components/ExerciseImg'
+import { fmt, expandSession } from '../lib/utils'
 
-export default function Runner({ seance, onClose, onComplete }) {
-  const [exIdx, setExIdx]     = useState(0)
-  const [setIdx, setSetIdx]   = useState(0)
-  const [phase, setPhase]     = useState('work')
-  const [timer, setTimer]     = useState(0)
-  const [running, setRunning] = useState(false)
+// Runner plein écran fidèle à l'app d'origine.
+// Accepte soit `steps` déjà calculées, soit une `seance` { exercices } qu'on déplie.
+export default function Runner({ seance, steps: stepsProp, startIdx = 0, onClose, onProgress, onComplete }) {
+  const steps = stepsProp || expandSession(seance?.exercices || seance?.items || [])
+  const [idx, setIdx] = useState(startIdx)
+  const [remaining, setRemaining] = useState(0)
+  const [running, setRunning] = useState(true)
   const [elapsed, setElapsed] = useState(0)
-  const intervalRef           = useRef(null)
-  const beep                  = useBeep()
-
-  const exercices = seance?.exercices || []
-  const ex        = exercices[exIdx]
+  const beepApi = useBeep()
+  const { ensure, beep } = beepApi
+  const tickRef = useRef(null)
+  const total = steps.length
+  const step = steps[idx]
 
   useWakeLock(true)
+  useEffect(() => { ensure() }, [])
+  useEffect(() => { if (onProgress) onProgress(idx) }, [idx])
 
+  // chrono total
   useEffect(() => {
     const id = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(id)
   }, [])
 
+  // init du minuteur quand on change d'étape
   useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (!running || phase !== 'rest') return
-    intervalRef.current = setInterval(() => {
-      setTimer(t => {
-        if (t <= 1) {
-          clearInterval(intervalRef.current)
-          beep(440, 300)
-          setPhase('work')
-          setRunning(false)
+    if (!step) return
+    if (step.kind === 'rest' || step.kind === 'timed') setRemaining(step.dur)
+    else setRemaining(0)
+    setRunning(true)
+  }, [idx])
+
+  // décompte des étapes minutées
+  useEffect(() => {
+    clearInterval(tickRef.current)
+    const isTimer = step && (step.kind === 'rest' || step.kind === 'timed')
+    if (!isTimer || !running) return
+    tickRef.current = setInterval(() => {
+      setRemaining(r => {
+        const nr = r - 1
+        if (nr <= 5 && nr >= 1) beep(820, 0.09)
+        if (nr <= 0) {
+          clearInterval(tickRef.current)
+          beep(440, 0.45)
+          setTimeout(() => setIdx(i => Math.min(i + 1, total)), 100)
           return 0
         }
-        if (t === 4) beep(880, 100)
-        return t - 1
+        return nr
       })
     }, 1000)
-    return () => clearInterval(intervalRef.current)
-  }, [running, phase, beep])
+    return () => clearInterval(tickRef.current)
+  }, [idx, running])
 
-  const startRest = useCallback(() => {
-    setTimer(ex?.repos ?? 90)
-    setPhase('rest')
-    setRunning(true)
-    beep(660, 200)
-  }, [ex, beep])
+  const next = () => setIdx(i => Math.min(i + 1, total))
+  const prev = () => setIdx(i => Math.max(i - 1, 0))
+  const finished = idx >= total
 
-  const nextSet = useCallback(() => {
-    if (setIdx + 1 < (ex?.series ?? 3)) {
-      setSetIdx(s => s + 1)
-      startRest()
-    } else if (exIdx + 1 < exercices.length) {
-      setExIdx(i => i + 1)
-      setSetIdx(0)
-      setPhase('work')
-    } else {
-      onComplete?.(elapsed)
-    }
-  }, [setIdx, ex, exIdx, exercices, elapsed, startRest, onComplete])
+  useEffect(() => { if (finished) onComplete && onComplete(elapsed) }, [finished])
 
-  if (!ex) return (
-    <div className="flex flex-col items-center justify-center h-full gap-6 py-20">
-      <p className="font-semibold text-text">Seance terminee !</p>
-      <p className="text-muted text-sm">Duree : {formatDuration(elapsed)}</p>
-      <Button onClick={() => onComplete?.(elapsed)}>Fermer</Button>
-    </div>
-  )
+  if (finished || !step) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-night text-text px-6">
+        <Icon name="trophy" size={48} className="text-gold" />
+        <p className="font-bold text-xl">Séance terminée !</p>
+        <p className="text-muted text-sm">Durée : {fmt(elapsed)}</p>
+        <button onClick={() => onComplete && onComplete(elapsed)} className="px-6 py-3 rounded-2xl font-bold bg-dawn text-night shadow-glow">
+          Fermer
+        </button>
+      </div>
+    )
+  }
 
-  const restPct = phase === 'rest' ? (timer / (ex.repos || 90)) * 100 : 100
+  const isTimer = step.kind === 'rest' || step.kind === 'timed'
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted">Exercice {exIdx + 1}/{exercices.length}</p>
-          <h2 className="font-bold text-text text-lg">{ex.nom}</h2>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-muted">Temps total</p>
-          <p className="font-mono text-gold">{formatDuration(elapsed)}</p>
-        </div>
+    <div className="fixed inset-0 z-50 flex flex-col bg-night text-text">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-surface"><Icon name="x" size={20} className="text-muted" /></button>
+        <div className="text-xs tracking-widest uppercase text-center flex-1 px-2 truncate text-muted">{step.block}</div>
+        <div className="text-xs tabular-nums text-muted">{idx + 1}/{total}</div>
       </div>
 
-      <ExerciseImg name={ex.nom} className="w-full h-40 object-contain rounded-2xl bg-surface" />
-
-      <Card className="text-center py-6">
-        {phase === 'work' ? (
-          <>
-            <p className="text-5xl font-bold text-text">
-              {setIdx + 1}<span className="text-2xl text-muted">/{ex.series}</span>
-            </p>
-            <p className="text-muted mt-2">
-              {ex.repsMin === ex.repsMax ? ex.repsMin : ex.repsMin + '-' + ex.repsMax} reps
-              {ex.poids ? ' - ' + ex.poids + ' kg' : ''}
-            </p>
-            <Button className="mt-4" onClick={nextSet}>
-              {setIdx + 1 < ex.series ? 'Serie faite - Repos' : exIdx + 1 < exercices.length ? 'Exercice suivant' : 'Terminer la seance'}
-            </Button>
-          </>
-        ) : (
-          <>
-            <p className="text-xs text-muted mb-2">Repos</p>
-            <p className="text-5xl font-mono font-bold text-gold">{timer}s</p>
-            <ProgressBar value={restPct} max={100} color="ember" className="mt-4" />
-            <Button variant="ghost" className="mt-4 text-xs" onClick={() => { setRunning(false); setPhase('work') }}>
-              Passer
-            </Button>
-          </>
-        )}
-      </Card>
-
-      <div className="space-y-1">
-        {exercices.map((e, i) => (
-          <div key={e.id || i} className={'flex items-center gap-2 p-2 rounded-lg text-sm ' + (i === exIdx ? 'bg-ember/15 text-gold' : i < exIdx ? 'text-muted' : 'text-muted')}>
-            <span>{i < exIdx ? 'OK' : i === exIdx ? '>' : 'o'}</span>
-            <span className="flex-1 truncate">{e.nom}</span>
-            <span className="text-xs">{e.series}x{e.repsMin}</span>
-          </div>
-        ))}
+      {/* Barre de progression */}
+      <div className="mx-5 h-1 rounded-full overflow-hidden bg-surface-2">
+        <div className="h-full bg-dawn" style={{ width: `${(idx / total) * 100}%`, transition: 'width 320ms cubic-bezier(.22,1,.36,1)' }} />
       </div>
 
-      <Button variant="ghost" onClick={onClose} className="text-muted text-xs">Abandonner la seance</Button>
+      {/* Corps */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        <div key={idx} className="fade-enter flex flex-col items-center w-full">
+          {step.tag && (
+            <div className="mb-3 px-3 py-1 rounded-full text-xs tracking-wider uppercase bg-surface text-gold">Série {step.tag}</div>
+          )}
+          {step.kind !== 'rest' && (
+            <ExerciseImg name={step.name} className="w-40 h-40 object-contain rounded-2xl mb-4 bg-surface" />
+          )}
+
+          {isTimer ? (
+            <div className="relative flex items-center justify-center my-2">
+              <Ring value={remaining} max={step.dur} />
+              <div className="absolute flex flex-col items-center">
+                <div className="text-6xl font-bold tabular-nums">{fmt(remaining)}</div>
+                <div className="text-sm mt-1 max-w-[10rem] text-muted">{step.kind === 'timed' ? step.name : 'Récupération'}</div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-3xl font-bold leading-tight max-w-xs">{step.name}</div>
+              <div className="mt-4 text-5xl font-extrabold text-dawn">{step.reps}</div>
+            </>
+          )}
+
+          {step.kind === 'work' && (
+            <button onClick={next} className="mt-10 w-full max-w-xs py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-dawn text-night shadow-glow">
+              <Icon name="check" size={22} /> Terminé
+            </button>
+          )}
+
+          {isTimer && (
+            <div className="mt-8 flex gap-3 w-full max-w-xs">
+              <button onClick={() => setRunning(r => !r)} className="flex-1 py-3 rounded-2xl font-semibold flex items-center justify-center bg-surface text-text">
+                <Icon name={running ? 'pause' : 'play'} size={18} />
+              </button>
+              <button onClick={next} className="flex-1 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 bg-surface text-gold">
+                <Icon name="skip" size={18} /> Passer
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button onClick={prev} className="mt-6 text-xs text-muted">← étape précédente</button>
+      </div>
     </div>
   )
 }
