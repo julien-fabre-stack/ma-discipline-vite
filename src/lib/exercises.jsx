@@ -27,7 +27,7 @@ export const DEFAULT_EXERCISES = [
   { nom: 'Corde a sauter',      groupe: 'Cardio',     type: 'cardio' },
 ]
 
-const EX_IMG_BASE = '/images/exercices/'
+const EX_IMG_BASE = `${import.meta.env.BASE_URL}images/exercices/`
 
 const normEx = (s) => (s || '')
   .toLowerCase()
