@@ -87,7 +87,7 @@ export default function Runner({ seance, onClose, onComplete }) {
         </div>
       </div>
 
-      <ExerciseImg name={ex.nom} className="w-full max-h-48 object-contain rounded-2xl bg-surface" />
+      <ExerciseImg name={ex.nom} className="w-full h-40 object-contain rounded-2xl bg-surface" />
 
       <Card className="text-center py-6">
         {phase === 'work' ? (
