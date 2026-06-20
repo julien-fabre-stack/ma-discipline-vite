@@ -85,15 +85,15 @@ export default function SuiviTab({ user }) {
       {/* Header sticky */}
       <div className="flex-shrink-0 pb-2">
         <div className="flex items-start justify-between mb-1">
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-100">Tableau de bord</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-text">Tableau de bord</h1>
         </div>
         <div className="flex items-center justify-between mb-2">
           <div className="text-xs">
-            <span className="tracking-widest uppercase text-yellow-400">Sans alcool</span>{' '}
-            <span className="text-slate-400">- {driftLabel(data?.drinkfree, today)}</span>
+            <span className="tracking-widest uppercase text-gold">Sans alcool</span>{' '}
+            <span className="text-muted">- {driftLabel(data?.drinkfree, today)}</span>
           </div>
           <button onClick={() => scrollToDay(today)}
-            className="flex items-center gap-1 text-xs font-bold tabular-nums px-2.5 py-1 rounded-full text-slate-900"
+            className="flex items-center gap-1 text-xs font-bold tabular-nums px-2.5 py-1 rounded-full text-night"
             style={{ background: 'linear-gradient(135deg, #FF7A45 0%, #FFC24B 100%)' }}>
             📅 Aujourd'hui
           </button>
@@ -101,7 +101,7 @@ export default function SuiviTab({ user }) {
 
         {/* Filtres Statuts */}
         <div className="flex items-center gap-2 mb-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-slate-500" style={{ width: 50 }}>Statuts</span>
+          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-muted" style={{ width: 50 }}>Statuts</span>
           {statuses.map(s => (
             <button key={s.id} onClick={() => goToStatus(s.id)}
               className="px-2 py-1 rounded-full text-[10px] font-semibold flex-shrink-0 whitespace-nowrap"
@@ -113,27 +113,27 @@ export default function SuiviTab({ user }) {
 
         {/* Filtres Cycle */}
         <div className="flex items-center gap-2 mb-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-slate-500" style={{ width: 50 }}>Cycle</span>
+          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-muted" style={{ width: 50 }}>Cycle</span>
           <button onClick={() => goToCycle('actif')}
-            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-slate-800 border border-slate-700">
-            <span className="rounded-sm bg-green-500" style={{ width: 5, height: 12 }} />actif
+            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-surface border border-line">
+            <span className="rounded-sm bg-ok" style={{ width: 5, height: 12 }} />actif
           </button>
           <button onClick={() => goToCycle('off')}
-            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-slate-800 border border-slate-700">
-            <span className="rounded-sm bg-slate-600" style={{ width: 5, height: 12 }} />off
+            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-surface border border-line">
+            <span className="rounded-sm bg-surface-2" style={{ width: 5, height: 12 }} />off
           </button>
           <button onClick={goToPerfect}
-            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1 flex-shrink-0 whitespace-nowrap bg-slate-800 border border-slate-700">
-            <span className="w-2 h-2 rounded-full bg-green-500" />parfaite
+            className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1 flex-shrink-0 whitespace-nowrap bg-surface border border-line">
+            <span className="w-2 h-2 rounded-full bg-ok" />parfaite
           </button>
         </div>
 
         {/* Filtres Activites */}
         <div className="flex items-center gap-2 mb-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-slate-500" style={{ width: 50 }}>Periodes</span>
+          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-muted" style={{ width: 50 }}>Periodes</span>
           {activities.map(a => (
             <button key={a.id} onClick={() => goToActivity(a.id)}
-              className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-slate-800"
+              className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-surface"
               style={{ border: `1px solid ${a.color}` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: a.color }} />{a.label}
             </button>
@@ -142,11 +142,11 @@ export default function SuiviTab({ user }) {
 
         {/* Filtres RDV */}
         <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-slate-500" style={{ width: 50 }}>RDV</span>
-          {rdvTypes.length === 0 && <span className="text-[10px] text-slate-500">Aucune categorie</span>}
+          <span className="text-[9px] tracking-widest uppercase flex-shrink-0 text-muted" style={{ width: 50 }}>RDV</span>
+          {rdvTypes.length === 0 && <span className="text-[10px] text-muted">Aucune categorie</span>}
           {rdvTypes.map(r => (
             <button key={r.id} onClick={() => goToRdv(r.id)}
-              className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-slate-800"
+              className="px-2 py-1 rounded-full text-[10px] flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap bg-surface"
               style={{ border: `1px solid ${r.color}` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: r.color }} />{r.label}
             </button>
@@ -155,7 +155,7 @@ export default function SuiviTab({ user }) {
       </div>
 
       {/* Timeline verticale + DayPanel */}
-      <div className="flex-1 flex overflow-hidden border-t border-slate-700">
+      <div className="flex-1 flex overflow-hidden border-t border-line">
         <div className="overflow-y-auto flex-shrink-0" style={{ width: 74 + (activities.length + 1) * (LANEW + 2) + 14 }}>
           {days.map(k => {
             const st = statusOf(agenda, k)
@@ -180,7 +180,7 @@ export default function SuiviTab({ user }) {
                   {d.toLocaleDateString('fr-FR', { weekday: 'short' })}.<br />{d.getDate()} {d.toLocaleDateString('fr-FR', { month: 'short' })}
                 </span>
                 <span className="flex flex-col items-center justify-center gap-0.5 flex-shrink-0" style={{ width: 10 }}>
-                  {perfect && <span className="w-1.5 h-1.5 rounded-full bg-green-500" />}
+                  {perfect && <span className="w-1.5 h-1.5 rounded-full bg-ok" />}
                   {evts.slice(0, 2).map(e => (
                     <span key={e.id} className="w-1.5 h-1.5 rounded-full" style={{ background: e.color || '#FFC24B' }} />
                   ))}

@@ -26,16 +26,16 @@ function MacroBar({ label, value, target, color }) {
   return (
     <div className="flex-1 min-w-0">
       <div className="flex justify-between text-xs mb-1">
-        <span className="text-slate-400">{label}</span>
-        <span className={over ? 'text-red-400' : 'text-slate-300'}>{Math.round(value)}g</span>
+        <span className="text-muted">{label}</span>
+        <span className={over ? 'text-danger' : 'text-muted'}>{Math.round(value)}g</span>
       </div>
-      <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+      <div className="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: over ? '#f87171' : color }}
+          style={{ width: `${pct}%`, background: over ? '#E5484D' : color }}
         />
       </div>
-      <div className="text-[10px] text-slate-500 mt-0.5 text-right">/{target}g</div>
+      <div className="text-[10px] text-muted mt-0.5 text-right">/{target}g</div>
     </div>
   )
 }
@@ -80,10 +80,10 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
   const macros = selected ? macrosOf(selected, qty) : null
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-900">
-      <div className="flex items-center gap-3 p-4 border-b border-slate-700">
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-200 text-xl leading-none">&times;</button>
-        <h2 className="font-semibold text-slate-100 flex-1">Ajouter un aliment</h2>
+    <div className="fixed inset-0 z-50 flex flex-col bg-night">
+      <div className="flex items-center gap-3 p-4 border-b border-line">
+        <button onClick={onClose} className="text-muted hover:text-text text-xl leading-none">&times;</button>
+        <h2 className="font-semibold text-text flex-1">Ajouter un aliment</h2>
       </div>
 
       <div className="flex gap-1 px-4 pt-3 pb-2">
@@ -92,7 +92,7 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
             key={k}
             onClick={() => setTab(k)}
             className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              tab === k ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+              tab === k ? 'bg-dawn text-night' : 'bg-surface text-muted hover:text-text'
             }`}
           >
             {l}
@@ -109,24 +109,24 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
               value={query}
               onChange={e => handleSearch(e.target.value)}
               placeholder="Rechercher un aliment..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 mb-3"
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2.5 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-ember mb-3"
             />
             {results.length === 0 && query.length >= 2 && (
-              <p className="text-slate-500 text-sm text-center py-4">Aucun resultat pour "{query}"</p>
+              <p className="text-muted text-sm text-center py-4">Aucun resultat pour "{query}"</p>
             )}
             {results.map(food => (
               <button
                 key={food.id}
                 onClick={() => pick(food)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 text-left transition-colors ${
-                  selected?.id === food.id ? 'bg-sky-900/50 border border-sky-600' : 'bg-slate-800 hover:bg-slate-700'
+                  selected?.id === food.id ? 'bg-ember/20 border border-ember/60' : 'bg-surface hover:bg-surface-2'
                 }`}
               >
                 <div>
-                  <p className="text-sm text-slate-100 truncate max-w-[200px]">{food.name}</p>
-                  <p className="text-xs text-slate-500">P {food.p}g · G {food.c}g · L {food.f}g · {food.kcal} kcal/100{food.unit}</p>
+                  <p className="text-sm text-text truncate max-w-[200px]">{food.name}</p>
+                  <p className="text-xs text-muted">P {food.p}g · G {food.c}g · L {food.f}g · {food.kcal} kcal/100{food.unit}</p>
                 </div>
-                {selected?.id === food.id && <span className="text-sky-400 text-xs ml-2">✓</span>}
+                {selected?.id === food.id && <span className="text-gold text-xs ml-2">✓</span>}
               </button>
             ))}
           </div>
@@ -140,10 +140,10 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
                 <button
                   key={combo.id}
                   onClick={() => onPickCombo(combo)}
-                  className="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg px-3 py-3 mb-2"
+                  className="w-full text-left bg-surface hover:bg-surface-2 rounded-lg px-3 py-3 mb-2"
                 >
-                  <p className="text-sm font-medium text-slate-100">{combo.name}</p>
-                  <p className="text-xs text-slate-500">{combo.items?.length} aliment(s)</p>
+                  <p className="text-sm font-medium text-text">{combo.name}</p>
+                  <p className="text-xs text-muted">{combo.items?.length} aliment(s)</p>
                 </button>
               ))
             }
@@ -160,8 +160,8 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
               />
             )}
             {showAdd && (
-              <div className="bg-slate-800 rounded-xl p-4 mb-3 space-y-3">
-                <p className="text-sm font-medium text-slate-300">Nouvel aliment</p>
+              <div className="bg-surface rounded-xl p-4 mb-3 space-y-3">
+                <p className="text-sm font-medium text-muted">Nouvel aliment</p>
                 <Input label="Nom" value={newFood.name} onChange={v => setNewFood(f => ({...f, name: v}))} placeholder="Ex: Mon granola maison" />
                 <div className="grid grid-cols-2 gap-2">
                   <Input label="Kcal / 100g" type="number" value={newFood.kcal} onChange={v => setNewFood(f => ({...f, kcal: Number(v)}))} />
@@ -187,10 +187,10 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
             {!showAdd && <Button variant="ghost" className="w-full mb-3" onClick={() => setShowAdd(true)}>+ Ajouter un aliment</Button>}
             {allFoods.filter(f => f.id.startsWith('u')).map(food => (
               <button key={food.id} onClick={() => pick(food)}
-                className={`w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg px-3 py-2.5 mb-1 ${selected?.id === food.id ? 'border border-sky-600' : ''}`}
+                className={`w-full text-left bg-surface hover:bg-surface-2 rounded-lg px-3 py-2.5 mb-1 ${selected?.id === food.id ? 'border border-ember/60' : ''}`}
               >
-                <p className="text-sm text-slate-100">{food.name}</p>
-                <p className="text-xs text-slate-500">{food.kcal} kcal · P{food.p} G{food.c} L{food.f}</p>
+                <p className="text-sm text-text">{food.name}</p>
+                <p className="text-xs text-muted">{food.kcal} kcal · P{food.p} G{food.c} L{food.f}</p>
               </button>
             ))}
           </div>
@@ -198,24 +198,24 @@ function FoodPicker({ onClose, onPick, onPickCombo, allFoods, combos }) {
       </div>
 
       {selected && (
-        <div className="border-t border-slate-700 p-4 bg-slate-900">
-          <p className="text-sm font-medium text-slate-300 mb-2 truncate">{selected.name}</p>
+        <div className="border-t border-line p-4 bg-night">
+          <p className="text-sm font-medium text-muted mb-2 truncate">{selected.name}</p>
           <div className="flex items-center gap-3 mb-3">
             <button onClick={() => setQty(q => Math.max(selected.unit === 'g' ? 10 : 1, q - (selected.unit === 'g' ? 10 : 1)))}
-              className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-lg">-</button>
+              className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted text-lg">-</button>
             <div className="flex-1 text-center">
-              <span className="text-2xl font-bold text-slate-100">{qty}</span>
-              <span className="text-slate-400 ml-1 text-sm">{selected.unit === 'g' ? 'g' : 'portion(s)'}</span>
+              <span className="text-2xl font-bold text-text">{qty}</span>
+              <span className="text-muted ml-1 text-sm">{selected.unit === 'g' ? 'g' : 'portion(s)'}</span>
             </div>
             <button onClick={() => setQty(q => q + (selected.unit === 'g' ? 10 : 1))}
-              className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-lg">+</button>
+              className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted text-lg">+</button>
           </div>
           {macros && (
-            <div className="flex gap-4 text-center text-xs mb-3 bg-slate-800 rounded-lg p-2">
-              <div className="flex-1"><div className="text-slate-400">Kcal</div><div className="font-bold text-sky-400">{Math.round(macros.kcal)}</div></div>
-              <div className="flex-1"><div className="text-slate-400">Prot</div><div className="font-bold text-green-400">{macros.p.toFixed(1)}g</div></div>
-              <div className="flex-1"><div className="text-slate-400">Gluc</div><div className="font-bold text-yellow-400">{macros.c.toFixed(1)}g</div></div>
-              <div className="flex-1"><div className="text-slate-400">Lip</div><div className="font-bold text-orange-400">{macros.f.toFixed(1)}g</div></div>
+            <div className="flex gap-4 text-center text-xs mb-3 bg-surface rounded-lg p-2">
+              <div className="flex-1"><div className="text-muted">Kcal</div><div className="font-bold text-gold">{Math.round(macros.kcal)}</div></div>
+              <div className="flex-1"><div className="text-muted">Prot</div><div className="font-bold text-ok">{macros.p.toFixed(1)}g</div></div>
+              <div className="flex-1"><div className="text-muted">Gluc</div><div className="font-bold text-gold">{macros.c.toFixed(1)}g</div></div>
+              <div className="flex-1"><div className="text-muted">Lip</div><div className="font-bold text-ember">{macros.f.toFixed(1)}g</div></div>
             </div>
           )}
           <Button className="w-full" onClick={confirm}>Ajouter au repas</Button>
@@ -323,19 +323,19 @@ export default function NutritionTab({ user, profile }) {
       {/* Header nav jour */}
       <div className="flex items-center gap-2">
         <button onClick={() => goDay(-1)}
-          className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-200 flex-shrink-0">
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-muted hover:text-text flex-shrink-0">
           ←
         </button>
         <div className="flex-1 text-center min-w-0">
-          <p className="font-bold text-slate-100 capitalize truncate">{dayLabel(viewKey, today)}</p>
+          <p className="font-bold text-text capitalize truncate">{dayLabel(viewKey, today)}</p>
           {viewKey !== today && (
-            <button onClick={() => { setViewKey(today); setOpenMeal(null) }} className="text-xs text-sky-400 hover:underline">
+            <button onClick={() => { setViewKey(today); setOpenMeal(null) }} className="text-xs text-gold hover:underline">
               Revenir a aujourd'hui
             </button>
           )}
         </div>
         <button onClick={() => goDay(1)} disabled={viewKey === today}
-          className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-200 flex-shrink-0 disabled:opacity-30">
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-muted hover:text-text flex-shrink-0 disabled:opacity-30">
           →
         </button>
       </div>
@@ -344,18 +344,18 @@ export default function NutritionTab({ user, profile }) {
       <Card>
         <div className="flex items-end justify-between mb-3">
           <div>
-            <p className="text-xs text-slate-400">Calories</p>
-            <p className={`text-3xl font-bold tabular-nums ${kcalOver ? 'text-red-400' : 'text-sky-400'}`}>
+            <p className="text-xs text-muted">Calories</p>
+            <p className={`text-3xl font-bold tabular-nums ${kcalOver ? 'text-danger' : 'text-gold'}`}>
               {Math.round(tots.kcal)}
             </p>
           </div>
-          <p className="text-sm text-slate-400 pb-1">/ {targets.kcal} kcal</p>
+          <p className="text-sm text-muted pb-1">/ {targets.kcal} kcal</p>
         </div>
-        <ProgressBar value={kcalPct} max={100} color={kcalOver ? 'red' : 'sky'} className="mb-4" />
+        <ProgressBar value={kcalPct} max={100} color={kcalOver ? 'red' : 'ember'} className="mb-4" />
         <div className="flex gap-3">
-          <MacroBar label="Prot" value={tots.p} target={targets.p} color="#4ade80" />
-          <MacroBar label="Gluc" value={tots.c} target={targets.c} color="#fbbf24" />
-          <MacroBar label="Lip"  value={tots.f} target={targets.f} color="#f97316" />
+          <MacroBar label="Prot" value={tots.p} target={targets.p} color="#4ADE80" />
+          <MacroBar label="Gluc" value={tots.c} target={targets.c} color="#FFC24B" />
+          <MacroBar label="Lip"  value={tots.f} target={targets.f} color="#FF7A45" />
         </div>
       </Card>
 
@@ -380,16 +380,16 @@ export default function NutritionTab({ user, profile }) {
               >
                 <span className="text-lg" style={{ color }}>{isOpen ? '▼' : '▶'}</span>
                 <div>
-                  <p className="font-bold text-slate-100">{label}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="font-bold text-text">{label}</p>
+                  <p className="text-xs text-muted">
                     L {mealTot.f.toFixed(1)} · G {mealTot.c.toFixed(1)} · P {mealTot.p.toFixed(1)}
                   </p>
                 </div>
               </button>
-              <p className="font-bold text-slate-100 mr-3">{Math.round(mealTot.kcal)} <span className="text-xs text-slate-400 font-normal">kcal</span></p>
+              <p className="font-bold text-text mr-3">{Math.round(mealTot.kcal)} <span className="text-xs text-muted font-normal">kcal</span></p>
               <button
                 onClick={() => setPicker(key)}
-                className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sky-400 text-xl leading-none hover:bg-slate-600"
+                className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-gold text-xl leading-none hover:bg-surface-2"
               >
                 +
               </button>
@@ -397,32 +397,32 @@ export default function NutritionTab({ user, profile }) {
 
             {/* Items du repas */}
             {isOpen && (
-              <div className="border-t border-slate-700">
+              <div className="border-t border-line">
                 {mealItems.length === 0 && (
-                  <p className="px-4 py-3 text-sm text-slate-500">Aucun aliment. Touche + pour en ajouter.</p>
+                  <p className="px-4 py-3 text-sm text-muted">Aucun aliment. Touche + pour en ajouter.</p>
                 )}
                 {mealItems.map(entry => {
                   const food = allFoods.find(f => f.id === entry.id)
                   if (!food) return null
                   const m = macrosOf(food, entry.qty)
                   return (
-                    <div key={entry.id} className="flex items-center px-4 py-2.5 border-t border-slate-700/50 first:border-t-0">
+                    <div key={entry.id} className="flex items-center px-4 py-2.5 border-t border-line/50 first:border-t-0">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-slate-100 truncate">{food.name}</p>
-                        <p className="text-xs text-slate-400">{entry.qty}{food.unit === 'g' ? 'g' : 'x'} · {Math.round(m.kcal)} kcal</p>
+                        <p className="text-sm text-text truncate">{food.name}</p>
+                        <p className="text-xs text-muted">{entry.qty}{food.unit === 'g' ? 'g' : 'x'} · {Math.round(m.kcal)} kcal</p>
                       </div>
                       <div className="flex items-center gap-1.5 ml-2">
                         <button
                           onClick={() => changeQty(key, entry.id, entry.qty - (food.unit === 'g' ? 10 : 1))}
-                          className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-sm"
+                          className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-muted text-sm"
                         >-</button>
                         <button
                           onClick={() => changeQty(key, entry.id, entry.qty + (food.unit === 'g' ? 10 : 1))}
-                          className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-sm"
+                          className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-muted text-sm"
                         >+</button>
                         <button
                           onClick={() => removeFromMeal(key, entry.id)}
-                          className="w-7 h-7 rounded-full bg-red-900/40 flex items-center justify-center text-red-400 text-xs ml-1"
+                          className="w-7 h-7 rounded-full bg-danger/15 flex items-center justify-center text-danger text-xs ml-1"
                         >✕</button>
                       </div>
                     </div>
@@ -430,7 +430,7 @@ export default function NutritionTab({ user, profile }) {
                 })}
                 {/* Enregistrer comme combo */}
                 {mealItems.length > 0 && (
-                  <div className="border-t border-slate-700">
+                  <div className="border-t border-line">
                     {saveDraft === key ? (
                       <div className="px-4 py-3 flex gap-2 items-center">
                         <input
@@ -438,7 +438,7 @@ export default function NutritionTab({ user, profile }) {
                           value={comboName}
                           onChange={e => setComboName(e.target.value)}
                           placeholder="Nom du combo..."
-                          className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                          className="flex-1 bg-surface-2 border border-surface-2 rounded-lg px-3 py-1.5 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-ember"
                         />
                         <Button variant="ghost" className="text-xs py-1.5 px-2" onClick={() => setSaveDraft(null)}>Annuler</Button>
                         <Button className="text-xs py-1.5 px-3" onClick={() => saveCombo(key)}>OK</Button>
@@ -446,7 +446,7 @@ export default function NutritionTab({ user, profile }) {
                     ) : (
                       <button
                         onClick={() => { setSaveDraft(key); setComboName('') }}
-                        className="w-full py-2.5 text-xs text-sky-400 hover:text-sky-300 flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 text-xs text-gold hover:text-gold flex items-center justify-center gap-1.5"
                       >
                         ⊞ Enregistrer ce repas comme combo
                       </button>
@@ -463,21 +463,21 @@ export default function NutritionTab({ user, profile }) {
       <Card>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 font-bold">
-            <span className="text-blue-400">💧</span> Eau
+            <span className="text-info">💧</span> Eau
           </div>
-          <p className="text-sm text-slate-400 tabular-nums">{water.toFixed(2)} / {targets.water} L</p>
+          <p className="text-sm text-muted tabular-nums">{water.toFixed(2)} / {targets.water} L</p>
         </div>
-        <ProgressBar value={water} max={targets.water} color="sky" className="mb-3" />
+        <ProgressBar value={water} max={targets.water} color="ember" className="mb-3" />
         <div className="flex gap-2">
           <button
             onClick={() => setDay({ water: Math.max(0, +(water - 0.25).toFixed(2)) })}
-            className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm flex items-center justify-center"
+            className="flex-1 py-2 rounded-xl bg-surface-2 text-muted text-sm flex items-center justify-center"
           >
             -25 cl
           </button>
           <button
             onClick={() => setDay({ water: +(water + 0.25).toFixed(2) })}
-            className="flex-[2] py-2 rounded-xl bg-slate-700 text-blue-400 font-semibold text-sm flex items-center justify-center gap-1"
+            className="flex-[2] py-2 rounded-xl bg-surface-2 text-info font-semibold text-sm flex items-center justify-center gap-1"
           >
             + 25 cl
           </button>

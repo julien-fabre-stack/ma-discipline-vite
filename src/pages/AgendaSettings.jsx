@@ -32,28 +32,28 @@ function CategoryEditor({ title, items, onChange, withColor = true }) {
   return (
     <Card className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="font-bold text-slate-100">{title}</p>
+        <p className="font-bold text-text">{title}</p>
         <Button variant="ghost" className="text-xs py-1" onClick={addNew}>+ Ajouter</Button>
       </div>
 
       <div className="space-y-2">
-        {items.length === 0 && <p className="text-sm text-slate-500">Aucune categorie.</p>}
+        {items.length === 0 && <p className="text-sm text-muted">Aucune categorie.</p>}
         {items.map(item => (
-          <div key={item.id} className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-3 py-2">
+          <div key={item.id} className="flex items-center gap-2 bg-surface-2/50 rounded-lg px-3 py-2">
             {withColor && <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: item.color }} />}
-            <span className="flex-1 text-sm text-slate-100 truncate">{item.label}</span>
-            <button onClick={() => edit(item)} className="text-slate-400 text-xs px-2">✏️</button>
-            <button onClick={() => remove(item.id)} className="text-red-400 text-xs px-2">🗑</button>
+            <span className="flex-1 text-sm text-text truncate">{item.label}</span>
+            <button onClick={() => edit(item)} className="text-muted text-xs px-2">✏️</button>
+            <button onClick={() => remove(item.id)} className="text-danger text-xs px-2">🗑</button>
           </div>
         ))}
       </div>
 
       {draft && (
-        <div className="bg-slate-700/50 rounded-lg p-3 space-y-2">
+        <div className="bg-surface-2/50 rounded-lg p-3 space-y-2">
           <Input label="Nom" value={draft.label} onChange={v => setDraft(d => ({ ...d, label: v }))} placeholder="Ex: Mission" />
           {withColor && (
             <div>
-              <p className="text-xs text-slate-400 mb-1.5">Couleur</p>
+              <p className="text-xs text-muted mb-1.5">Couleur</p>
               <div className="flex gap-2 flex-wrap">
                 {PALETTE.map(c => (
                   <button key={c} onClick={() => setDraft(d => ({ ...d, color: c }))}
@@ -105,9 +105,9 @@ function PeriodsManager({ agenda, onUpdate }) {
   return (
     <Card className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="font-bold text-slate-100">Planning (periodes)</p>
+        <p className="font-bold text-text">Planning (periodes)</p>
       </div>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-muted">
         Assigne un Statut, un Cycle (actif/off) ou une Activite a une plage de dates.
         Ca colore automatiquement la timeline du Suivi.
       </p>
@@ -138,16 +138,16 @@ function PeriodsManager({ agenda, onUpdate }) {
       )}
 
       <div className="space-y-2 pt-1">
-        {sorted.length === 0 && <p className="text-sm text-slate-500">Aucune periode definie.</p>}
+        {sorted.length === 0 && <p className="text-sm text-muted">Aucune periode definie.</p>}
         {sorted.map(p => (
-          <div key={p.id} className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-3 py-2.5">
+          <div key={p.id} className="flex items-center gap-2 bg-surface-2/50 rounded-lg px-3 py-2.5">
             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: catColor(p) }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-slate-100 truncate">{kindLabel[p.kind]} : {catLabel(p)}</p>
-              <p className="text-xs text-slate-400">{p.start} → {p.end}</p>
+              <p className="text-sm text-text truncate">{kindLabel[p.kind]} : {catLabel(p)}</p>
+              <p className="text-xs text-muted">{p.start} → {p.end}</p>
             </div>
-            <button onClick={() => editPeriod(p)} className="text-slate-400 text-xs px-2">✏️</button>
-            <button onClick={() => deletePeriod(p.id)} className="text-red-400 text-xs px-2">🗑</button>
+            <button onClick={() => editPeriod(p)} className="text-muted text-xs px-2">✏️</button>
+            <button onClick={() => deletePeriod(p.id)} className="text-danger text-xs px-2">🗑</button>
           </div>
         ))}
       </div>
@@ -162,12 +162,12 @@ export default function AgendaSettings({ agenda, onUpdate }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-100">Categories du tableau de bord</h2>
+      <h2 className="text-lg font-semibold text-text">Categories du tableau de bord</h2>
       <CategoryEditor title="Statuts" items={statuses} onChange={v => onUpdate({ ...agenda, statuses: v })} />
       <CategoryEditor title="Activites / Periodes" items={activities} onChange={v => onUpdate({ ...agenda, activities: v })} />
       <CategoryEditor title="Types de RDV" items={rdvTypes} onChange={v => onUpdate({ ...agenda, rdvTypes: v })} />
 
-      <h2 className="text-lg font-semibold text-slate-100 pt-2">Planning</h2>
+      <h2 className="text-lg font-semibold text-text pt-2">Planning</h2>
       <PeriodsManager agenda={agenda} onUpdate={onUpdate} />
     </div>
   )

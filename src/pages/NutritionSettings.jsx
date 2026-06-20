@@ -43,7 +43,7 @@ export default function NutritionSettings({ nutData, onUpdate }) {
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-slate-100">Mes aliments</h2>
+          <h2 className="text-lg font-semibold text-text">Mes aliments</h2>
           <Button onClick={startNew}>+ Ajouter</Button>
         </div>
 
@@ -65,7 +65,7 @@ export default function NutritionSettings({ nutData, onUpdate }) {
 
         {customFoods.length === 0 && !showAddFood && (
           <Card className="text-center py-6">
-            <p className="text-sm text-slate-400">Aucun aliment perso.</p>
+            <p className="text-sm text-muted">Aucun aliment perso.</p>
           </Card>
         )}
 
@@ -73,12 +73,12 @@ export default function NutritionSettings({ nutData, onUpdate }) {
           {customFoods.map(food => (
             <Card key={food.id} className="flex items-center justify-between py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-slate-100 truncate">{food.name}</p>
-                <p className="text-xs text-slate-400">{food.kcal} kcal - P{food.p} G{food.c} L{food.f}</p>
+                <p className="text-sm text-text truncate">{food.name}</p>
+                <p className="text-xs text-muted">{food.kcal} kcal - P{food.p} G{food.c} L{food.f}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
-                <button onClick={() => { setEditFood({ ...food }); setShowAddFood(true) }} className="p-1.5 text-slate-400 text-xs">✏️</button>
-                <button onClick={() => deleteFood(food.id)} className="p-1.5 text-red-400 text-xs">🗑</button>
+                <button onClick={() => { setEditFood({ ...food }); setShowAddFood(true) }} className="p-1.5 text-muted text-xs">✏️</button>
+                <button onClick={() => deleteFood(food.id)} className="p-1.5 text-danger text-xs">🗑</button>
               </div>
             </Card>
           ))}
@@ -86,20 +86,20 @@ export default function NutritionSettings({ nutData, onUpdate }) {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-slate-100 mb-3">Mes combos</h2>
+        <h2 className="text-lg font-semibold text-text mb-3">Mes combos</h2>
         {combos.length === 0 && (
           <Card className="text-center py-6">
-            <p className="text-sm text-slate-400">Aucun combo sauvegarde. Cree-en depuis l onglet Nutrition.</p>
+            <p className="text-sm text-muted">Aucun combo sauvegarde. Cree-en depuis l onglet Nutrition.</p>
           </Card>
         )}
         <div className="space-y-2">
           {combos.map(combo => (
             <Card key={combo.id} className="flex items-center justify-between py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-slate-100 truncate">{combo.name}</p>
-                <p className="text-xs text-slate-400">{combo.items?.length || 0} aliment(s)</p>
+                <p className="text-sm text-text truncate">{combo.name}</p>
+                <p className="text-xs text-muted">{combo.items?.length || 0} aliment(s)</p>
               </div>
-              <button onClick={() => deleteCombo(combo.id)} className="p-1.5 text-red-400 text-xs flex-shrink-0">🗑</button>
+              <button onClick={() => deleteCombo(combo.id)} className="p-1.5 text-danger text-xs flex-shrink-0">🗑</button>
             </Card>
           ))}
         </div>

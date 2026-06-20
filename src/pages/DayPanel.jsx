@@ -65,59 +65,59 @@ export default function DayPanel({ data, agenda, update, dayKey, cycleStart }) {
 
   return (
     <div>
-      <div className="font-bold capitalize mb-2 text-slate-100 text-sm">{dateLabel}</div>
+      <div className="font-bold capitalize mb-2 text-text text-sm">{dateLabel}</div>
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {st && <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: st.color, color: '#1A1206' }}>{st.label}</span>}
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-700 text-slate-100">
-          Sport : <span className={sport === 'actif' ? 'font-bold underline' : 'italic text-slate-400'}>{sport}</span>
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-2 text-text">
+          Sport : <span className={sport === 'actif' ? 'font-bold underline' : 'italic text-muted'}>{sport}</span>
         </span>
         {acts.map(a => (
-          <span key={a.id} className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 bg-slate-900 text-slate-100" style={{ border: `1px solid ${a.color}` }}>
+          <span key={a.id} className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 bg-night text-text" style={{ border: `1px solid ${a.color}` }}>
             <span className="w-2 h-2 rounded-full" style={{ background: a.color }} />{a.label}
           </span>
         ))}
       </div>
-      <p className="text-[11px] text-slate-500 mb-3">
+      <p className="text-[11px] text-muted mb-3">
         Pour definir le statut, cycle ou activite de ce jour : Reglages → Suivi → Planning.
       </p>
 
       <Collapsible title="Habitudes" badge={`${doneCount}/${habits.length}`} open={open.habits} onToggle={() => toggle('habits')}>
-        <div className="rounded-xl overflow-hidden border border-slate-700">
+        <div className="rounded-xl overflow-hidden border border-line">
           {habits.map((h, i) => (
             <button key={h.id} onClick={() => setHabit(h.id)}
-              className={`w-full flex items-center gap-2 px-2.5 py-2 text-left ${i % 2 ? 'bg-slate-900' : 'bg-slate-800'}`}>
-              <div className={`rounded-full flex items-center justify-center flex-shrink-0 w-[18px] h-[18px] ${dh[h.id] ? 'bg-gradient-to-br from-orange-400 to-yellow-300' : 'border-2 border-slate-600'}`}>
-                {dh[h.id] && <span className="text-[9px] text-slate-900 font-bold">✓</span>}
+              className={`w-full flex items-center gap-2 px-2.5 py-2 text-left ${i % 2 ? 'bg-night' : 'bg-surface'}`}>
+              <div className={`rounded-full flex items-center justify-center flex-shrink-0 w-[18px] h-[18px] ${dh[h.id] ? 'bg-dawn' : 'border-2 border-surface-2'}`}>
+                {dh[h.id] && <span className="text-[9px] text-night font-bold">✓</span>}
               </div>
-              <span className={`text-xs ${dh[h.id] ? 'text-slate-100' : 'text-slate-400'}`}>{h.label}</span>
+              <span className={`text-xs ${dh[h.id] ? 'text-text' : 'text-muted'}`}>{h.label}</span>
             </button>
           ))}
         </div>
       </Collapsible>
 
       <Collapsible title="Rendez-vous" badge={evts.length || null} open={open.rdv} onToggle={() => toggle('rdv')}>
-        <div className="rounded-xl mb-2 overflow-hidden bg-slate-900 border border-slate-700">
-          {evts.length === 0 && <div className="px-3 py-2.5 text-sm text-slate-400">Aucun RDV.</div>}
+        <div className="rounded-xl mb-2 overflow-hidden bg-night border border-line">
+          {evts.length === 0 && <div className="px-3 py-2.5 text-sm text-muted">Aucun RDV.</div>}
           {evts.map((e, i) => {
             const rt = rdvTypes.find(x => x.id === e.typeId)
             const sub = [rt?.label, e.time].filter(Boolean).join(' - ')
             return (
-              <div key={e.id} className={`flex items-center gap-2 px-3 py-2.5 ${i > 0 ? 'border-t border-slate-700' : ''}`}>
+              <div key={e.id} className={`flex items-center gap-2 px-3 py-2.5 ${i > 0 ? 'border-t border-line' : ''}`}>
                 <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: e.color || RDV_COLORS[0] }} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-100">{e.label}</div>
-                  {sub && <div className="text-xs text-yellow-400">{sub}</div>}
+                  <div className="text-sm text-text">{e.label}</div>
+                  {sub && <div className="text-xs text-gold">{sub}</div>}
                 </div>
-                <button onClick={() => delEvent(e.id)} className="p-1.5 rounded-lg bg-slate-700 text-slate-400 text-xs">✕</button>
+                <button onClick={() => delEvent(e.id)} className="p-1.5 rounded-lg bg-surface-2 text-muted text-xs">✕</button>
               </div>
             )
           })}
         </div>
         {evtDraft ? (
-          <div className="rounded-xl p-3 mb-1 bg-slate-900">
+          <div className="rounded-xl p-3 mb-1 bg-night">
             <input autoFocus value={evtDraft.label} onChange={e => setEvtDraft({ ...evtDraft, label: e.target.value })}
-              placeholder="Intitule du RDV" className="w-full px-3 py-2.5 rounded-xl mb-2 outline-none text-sm bg-slate-800 text-slate-100" />
+              placeholder="Intitule du RDV" className="w-full px-3 py-2.5 rounded-xl mb-2 outline-none text-sm bg-surface text-text" />
             {rdvTypes.length > 0 ? (
               <div className="flex gap-1.5 mb-2 flex-wrap">
                 {rdvTypes.map(rt => {
@@ -142,8 +142,8 @@ export default function DayPanel({ data, agenda, update, dayKey, cycleStart }) {
             )}
             <div className="flex gap-2">
               <input type="time" value={evtDraft.time} onChange={e => setEvtDraft({ ...evtDraft, time: e.target.value })}
-                className="flex-1 px-3 py-2.5 rounded-xl outline-none text-sm bg-slate-800 text-slate-100" />
-              <button onClick={() => setEvtDraft(null)} className="px-4 rounded-xl text-sm bg-slate-700 text-slate-400">Annuler</button>
+                className="flex-1 px-3 py-2.5 rounded-xl outline-none text-sm bg-surface text-text" />
+              <button onClick={() => setEvtDraft(null)} className="px-4 rounded-xl text-sm bg-surface-2 text-muted">Annuler</button>
             </div>
             <Button className="w-full mt-2" onClick={addEvent}>Ajouter</Button>
           </div>
@@ -156,20 +156,20 @@ export default function DayPanel({ data, agenda, update, dayKey, cycleStart }) {
 
       <Collapsible title="Taches" badge={openTodos || null} open={open.todo} onToggle={() => toggle('todo')}>
         <div className="space-y-2">
-          {todos.length === 0 && <p className="text-sm text-slate-500">Aucune tache.</p>}
+          {todos.length === 0 && <p className="text-sm text-muted">Aucune tache.</p>}
           {todos.map(t => (
-            <div key={t.id} className="flex items-center gap-2 bg-slate-900 rounded-lg px-3 py-2">
+            <div key={t.id} className="flex items-center gap-2 bg-night rounded-lg px-3 py-2">
               <button onClick={() => toggleTodo(t.id)}
-                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.done ? 'bg-green-500' : 'border-2 border-slate-600'}`}>
+                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.done ? 'bg-ok' : 'border-2 border-surface-2'}`}>
                 {t.done && <span className="text-[10px] text-white font-bold">✓</span>}
               </button>
-              <span className={`flex-1 text-sm ${t.done ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{t.text}</span>
-              <button onClick={() => delTodo(t.id)} className="text-red-400 text-xs px-1.5">✕</button>
+              <span className={`flex-1 text-sm ${t.done ? 'text-muted line-through' : 'text-text'}`}>{t.text}</span>
+              <button onClick={() => delTodo(t.id)} className="text-danger text-xs px-1.5">✕</button>
             </div>
           ))}
           <div className="flex gap-2">
             <input value={newTodo} onChange={e => setNewTodo(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTodo()}
-              placeholder="Nouvelle tache..." className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              placeholder="Nouvelle tache..." className="flex-1 bg-night border border-line rounded-lg px-3 py-2 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-ember" />
             <Button onClick={addTodo} className="px-4">+</Button>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function DayPanel({ data, agenda, update, dayKey, cycleStart }) {
           onBlur={saveNote}
           placeholder="Observations du jour..."
           rows={3}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+          className="w-full bg-night border border-line rounded-lg px-3 py-2 text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-ember resize-none"
         />
       </Collapsible>
     </div>

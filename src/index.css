@@ -1,22 +1,32 @@
 @import "tailwindcss";
 
-:root {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-text: #f1f5f9;
-  --color-muted: #94a3b8;
-  --color-accent: #38bdf8;
-  --color-success: #4ade80;
-  --color-danger: #f87171;
-  --color-warning: #fbbf24;
+/* ===== Thème "Aube" — palette officielle Ma Discipline ===== */
+@theme {
+  --color-night:    #15121C;  /* fond principal */
+  --color-surface:  #1E1A28;  /* cartes */
+  --color-surface-2:#2A2438;  /* éléments sur cartes (inputs, pills) */
+  --color-line:     rgba(255,255,255,0.08);
+  --color-ember:    #FF7A45;  /* accent chaud (début dégradé) */
+  --color-gold:     #FFC24B;  /* accent chaud (fin dégradé) */
+  --color-text:     #F3EDE7;
+  --color-muted:    #9C90A8;
+  --color-ok:       #4ADE80;
+  --color-info:     #5BC0FF;
+  --color-danger:   #E5484D;
+
+  /* Alias pour compatibilité avec le code existant (bg/accent génériques) */
+  --color-bg:      var(--color-night);
+  --color-accent:  var(--color-ember);
+  --color-success: var(--color-ok);
+  --color-warning: var(--color-gold);
+  --color-border:  var(--color-line);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-body {
+html, body {
   margin: 0;
-  background-color: var(--color-bg);
+  background-color: var(--color-night);
   color: var(--color-text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100dvh;
@@ -28,6 +38,36 @@ body {
   flex-direction: column;
 }
 
+input { font-size: 16px; } /* évite le zoom auto iOS */
+
+.fixed.inset-0 { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--color-night); }
+::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 3px; }
+
+/* Dégradé signature "Aube" — boutons primaires, CTA */
+.bg-dawn {
+  background: linear-gradient(135deg, var(--color-ember) 0%, var(--color-gold) 100%);
+}
+.text-dawn {
+  background: linear-gradient(135deg, var(--color-ember) 0%, var(--color-gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shadow-glow {
+  box-shadow: 0 6px 18px -6px rgba(255, 122, 69, 0.45);
+}
+
+button { transition: transform 150ms cubic-bezier(.34,1.56,.64,1), opacity 150ms ease, background-color 200ms ease, border-color 200ms ease, color 200ms ease; }
+button:active { transform: scale(0.96); opacity: 0.85; }
+
+@keyframes tabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.tab-enter { animation: tabIn 260ms cubic-bezier(.22,1,.36,1) both; }
+.fade-enter { animation: fadeIn 220ms ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

@@ -22,7 +22,7 @@ export function ConfirmHost() {
 
   return (
     <Modal open={state.open} onClose={() => handle(false)} title={state.title}>
-      <p className="text-slate-300 mb-6">{state.message}</p>
+      <p className="text-muted mb-6">{state.message}</p>
       <div className="flex gap-3 justify-end">
         <Button variant="ghost" onClick={() => handle(false)}>Annuler</Button>
         <Button variant="danger" onClick={() => handle(true)}>Confirmer</Button>

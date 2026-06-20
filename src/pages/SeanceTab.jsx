@@ -6,6 +6,7 @@ import { uid } from '../lib/utils'
 import { confirm } from '../components/ConfirmHost'
 import Runner from './Runner'
 import WodRunner from './WodRunner'
+import ExerciseRow from '../components/ExerciseRow'
 
 const pad = n => String(n).padStart(2, '0')
 const dateKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
@@ -35,7 +36,7 @@ export default function SeanceTab({ user }) {
   }
 
   const openNew = () => {
-    setEditWorkout({ id: uid(), name: 'Nouvelle seance', exercices: [{ ...DEFAULT_EXERCICE, id: uid() }] })
+    setEditWorkout({ id: uid(), name: 'Nouvelle seance', exercices: [{ ...DEFAULT_EXERCICE, id: uid(), repos: 60, poids: 0 }] })
     setShowModal(true)
   }
   const openEdit = (w) => { setEditWorkout({ ...w }); setShowModal(true) }
@@ -72,7 +73,7 @@ export default function SeanceTab({ user }) {
 
   if (loading) return (
     <div className="flex justify-center py-20">
-      <div className="w-8 h-8 border-2 border-slate-600 border-t-sky-400 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-surface-2 border-t-ember rounded-full animate-spin" />
     </div>
   )
 
@@ -80,20 +81,20 @@ export default function SeanceTab({ user }) {
     <div className="space-y-4">
       {/* Seance du jour (selon semaine type) */}
       <div>
-        <p className="text-xs text-slate-400 uppercase tracking-wide mb-2">Aujourd'hui</p>
+        <p className="text-xs text-muted uppercase tracking-wide mb-2">Aujourd'hui</p>
         {todayWorkout ? (
-          <Card className="border-sky-700">
+          <Card className="border-ember/60">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-slate-100">{todayWorkout.name}</p>
-                <p className="text-xs text-slate-400">{todayWorkout.exercices?.length || 0} exercice(s)</p>
+                <p className="font-bold text-text">{todayWorkout.name}</p>
+                <p className="text-xs text-muted">{todayWorkout.exercices?.length || 0} exercice(s)</p>
               </div>
               <Button variant="success" onClick={() => setActiveRun(todayWorkout)}>Demarrer</Button>
             </div>
           </Card>
         ) : (
           <Card className="text-center py-4">
-            <p className="text-sm text-slate-400">Pas de seance prevue aujourd'hui. Profite du repos.</p>
+            <p className="text-sm text-muted">Pas de seance prevue aujourd'hui. Profite du repos.</p>
           </Card>
         )}
       </div>
@@ -101,15 +102,15 @@ export default function SeanceTab({ user }) {
       {/* WOD Runner */}
       <Card className="flex items-center justify-between">
         <div>
-          <p className="font-bold text-slate-100 flex items-center gap-2">🔥 WOD</p>
-          <p className="text-xs text-slate-400">AMRAP, For Time, EMOM, Tabata</p>
+          <p className="font-bold text-text flex items-center gap-2">🔥 WOD</p>
+          <p className="text-xs text-muted">AMRAP, For Time, EMOM, Tabata</p>
         </div>
         <Button variant="secondary" onClick={() => setShowWod(true)}>Lancer un WOD</Button>
       </Card>
 
       {/* Bibliotheque complete */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-100">Mes seances</h2>
+        <h2 className="text-lg font-semibold text-text">Mes seances</h2>
         <Button onClick={openNew}>+ Nouvelle</Button>
       </div>
 
@@ -123,11 +124,11 @@ export default function SeanceTab({ user }) {
         ) : (
           <div className="space-y-3">
             {workouts.map(w => (
-              <Card key={w.id} className="hover:border-slate-500 transition-colors">
+              <Card key={w.id} className="hover:border-surface-2 transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEdit(w)}>
-                    <p className="font-semibold text-slate-100 truncate">{w.name || 'Seance sans nom'}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="font-semibold text-text truncate">{w.name || 'Seance sans nom'}</p>
+                    <p className="text-xs text-muted mt-0.5">
                       {w.exercices?.length ? w.exercices.length + ' exercice(s)' : 'Vide'}
                     </p>
                   </div>
@@ -137,18 +138,18 @@ export default function SeanceTab({ user }) {
                         Demarrer
                       </Button>
                     )}
-                    <Button variant="ghost" onClick={() => openEdit(w)} className="text-slate-400 px-2">✏️</Button>
-                    <Button variant="ghost" onClick={() => handleDelete(w.id)} className="text-red-400 hover:text-red-300 px-2">🗑</Button>
+                    <Button variant="ghost" onClick={() => openEdit(w)} className="text-muted px-2">✏️</Button>
+                    <Button variant="ghost" onClick={() => handleDelete(w.id)} className="text-danger hover:text-danger px-2">🗑</Button>
                   </div>
                 </div>
                 {w.exercices?.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-700 flex flex-wrap gap-1.5">
+                  <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-1.5">
                     {w.exercices.slice(0, 5).map((ex, i) => (
-                      <span key={i} className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
+                      <span key={i} className="text-xs bg-surface-2 text-muted px-2 py-0.5 rounded-full">
                         {ex.nom || 'Exercice ' + (i + 1)}
                       </span>
                     ))}
-                    {w.exercices.length > 5 && <span className="text-xs text-slate-500">+{w.exercices.length - 5}</span>}
+                    {w.exercices.length > 5 && <span className="text-xs text-muted">+{w.exercices.length - 5}</span>}
                   </div>
                 )}
               </Card>
@@ -157,7 +158,7 @@ export default function SeanceTab({ user }) {
         )
       }
 
-      <p className="text-[11px] text-slate-500 text-center">
+      <p className="text-[11px] text-muted text-center">
         Pour configurer la semaine type, va dans Reglages → Seances.
       </p>
 
@@ -168,37 +169,25 @@ export default function SeanceTab({ user }) {
             <Input label="Nom de la seance" value={editWorkout.name} onChange={v => setEditWorkout(w => ({ ...w, name: v }))} placeholder="Ex : Full body A" />
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-slate-400 font-medium">Exercices</p>
+                <p className="text-xs text-muted font-medium">Exercices</p>
                 <Button variant="ghost" className="text-xs py-1"
-                  onClick={() => setEditWorkout(w => ({ ...w, exercices: [...(w.exercices || []), { ...DEFAULT_EXERCICE, id: uid() }] }))}>
+                  onClick={() => setEditWorkout(w => ({ ...w, exercices: [...(w.exercices || []), { ...DEFAULT_EXERCICE, id: uid(), repos: 60, poids: 0 }] }))}>
                   + Ajouter
                 </Button>
               </div>
-              <div className="space-y-3 max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {(editWorkout.exercices || []).map((ex, idx) => (
-                  <div key={ex.id || idx} className="bg-slate-700/50 rounded-lg p-3 space-y-2">
-                    <div className="flex gap-2">
-                      <Input className="flex-1" placeholder="Nom de l'exercice" value={ex.nom}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, nom: v } : e) }))} />
-                      <Button variant="ghost" className="text-red-400 px-2 self-end"
-                        onClick={() => setEditWorkout(w => ({ ...w, exercices: w.exercices.filter((_, i) => i !== idx) }))}>✕</Button>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Input label="Series" type="number" min="1" value={ex.series}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, series: Number(v) } : e) }))} />
-                      <Input label="Reps min" type="number" min="0" value={ex.repsMin}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, repsMin: Number(v) } : e) }))} />
-                      <Input label="Reps max" type="number" min="0" value={ex.repsMax}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, repsMax: Number(v) } : e) }))} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input label="Poids (kg)" type="number" min="0" step="0.5" value={ex.poids}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, poids: Number(v) } : e) }))} />
-                      <Input label="Repos (s)" type="number" min="0" step="10" value={ex.repos}
-                        onChange={v => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, i) => i === idx ? { ...e, repos: Number(v) } : e) }))} />
-                    </div>
-                  </div>
+                  <ExerciseRow
+                    key={ex.id || idx}
+                    ex={ex}
+                    idx={idx}
+                    onChange={(i, patch) => setEditWorkout(w => ({ ...w, exercices: w.exercices.map((e, j) => j === i ? { ...e, ...patch } : e) }))}
+                    onRemove={(i) => setEditWorkout(w => ({ ...w, exercices: w.exercices.filter((_, j) => j !== i) }))}
+                  />
                 ))}
+                {(editWorkout.exercices || []).length === 0 && (
+                  <p className="text-sm text-muted text-center py-3">Aucun exercice. Clique + Ajouter.</p>
+                )}
               </div>
             </div>
             <div className="flex gap-3 justify-end pt-2">

@@ -51,24 +51,24 @@ export default function Settings({ user, profile, onProfileUpdate }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-100">Reglages</h2>
+      <h2 className="text-lg font-semibold text-text">Reglages</h2>
 
       <Tabs tabs={SUB_TABS} active={sub} onChange={setSub} />
 
       {sub === 'profil' && (
         <div className="space-y-4">
           <Card>
-            <p className="text-sm text-slate-400 mb-1">Compte connecte</p>
-            <p className="text-slate-100 font-medium">{user?.email}</p>
+            <p className="text-sm text-muted mb-1">Compte connecte</p>
+            <p className="text-text font-medium">{user?.email}</p>
           </Card>
           <Card className="space-y-3">
-            <p className="text-sm font-medium text-slate-300">Profil</p>
+            <p className="text-sm font-medium text-muted">Profil</p>
             <Input label="Prenom / Pseudo" value={profile?.nom || ''} onChange={v => onProfileUpdate({ nom: v })} placeholder="Snake" />
             <Input label="Poids corporel (kg)" type="number" min="30" max="300" step="0.1" value={profile?.poids || ''} onChange={v => onProfileUpdate({ poids: Number(v) })} />
             <Input label="Objectif kcal / jour" type="number" min="1000" max="6000" step="50" value={profile?.objectifKcal || ''} onChange={v => onProfileUpdate({ objectifKcal: Number(v) })} />
           </Card>
           <Card className="space-y-3">
-            <p className="text-sm font-medium text-slate-300">Objectifs macros</p>
+            <p className="text-sm font-medium text-muted">Objectifs macros</p>
             <div className="grid grid-cols-3 gap-3">
               <Input label="Prot (g)" type="number" min="0" value={profile?.objectifProtG || ''} onChange={v => onProfileUpdate({ objectifProtG: Number(v) })} />
               <Input label="Lip (g)"  type="number" min="0" value={profile?.objectifLipG  || ''} onChange={v => onProfileUpdate({ objectifLipG:  Number(v) })} />
@@ -82,19 +82,19 @@ export default function Settings({ user, profile, onProfileUpdate }) {
       {sub === 'seances' && (
         workoutsDoc
           ? <TrainingSettings workoutsDoc={workoutsDoc} onUpdate={updateWorkouts} />
-          : <p className="text-slate-400 text-sm">Chargement...</p>
+          : <p className="text-muted text-sm">Chargement...</p>
       )}
 
       {sub === 'nutrition' && (
         nutDoc
           ? <NutritionSettings nutData={nutDoc} onUpdate={updateNutrition} />
-          : <p className="text-slate-400 text-sm">Chargement...</p>
+          : <p className="text-muted text-sm">Chargement...</p>
       )}
 
       {sub === 'suivi' && (
         agendaDoc
           ? <AgendaSettings agenda={agendaDoc.agenda || {}} onUpdate={updateAgenda} />
-          : <p className="text-slate-400 text-sm">Chargement...</p>
+          : <p className="text-muted text-sm">Chargement...</p>
       )}
     </div>
   )

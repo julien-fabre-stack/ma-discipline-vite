@@ -6,6 +6,7 @@ import { migrateProfile } from './lib/migrate'
 import { DEFAULT_PROFILE } from './lib/defaults'
 import { Tabs, Spinner, Button, Input, Card } from './components/UI'
 import { ConfirmHost } from './components/ConfirmHost'
+import { useOnlineStatus } from './hooks/useOnlineStatus'
 import SeanceTab    from './pages/SeanceTab'
 import NutritionTab from './pages/NutritionTab'
 import SuiviTab     from './pages/SuiviTab'
@@ -48,26 +49,26 @@ function AuthScreen() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-night">
       <Card className="w-full max-w-sm space-y-5">
         <div className="text-center">
           <p className="text-3xl mb-1">💪</p>
-          <h1 className="text-xl font-bold text-slate-100">Ma Discipline</h1>
-          <p className="text-sm text-slate-400 mt-1">{mode === 'login' ? 'Connexion' : 'Creer un compte'}</p>
+          <h1 className="text-xl font-bold text-dawn">Ma Discipline</h1>
+          <p className="text-sm text-muted mt-1">{mode === 'login' ? 'Connexion' : 'Creer un compte'}</p>
         </div>
         {error && (
-          <p className="text-sm text-red-400 bg-red-900/30 border border-red-800 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-sm text-danger bg-danger/15 border border-danger/40 rounded-lg px-3 py-2">{error}</p>
         )}
         <Input label="Email" type="email" value={email} onChange={setEmail} placeholder="vous@exemple.com" />
         <Input label="Mot de passe" type="password" value={password} onChange={setPassword} placeholder="........." />
         <Button className="w-full" onClick={handle} disabled={loading || !email || !password}>
           {loading ? 'Chargement...' : mode === 'login' ? 'Se connecter' : "S'inscrire"}
         </Button>
-        <p className="text-center text-xs text-slate-400">
+        <p className="text-center text-xs text-muted">
           {mode === 'login' ? 'Pas encore de compte ?' : 'Deja inscrit ?'}{' '}
           <button
             onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError('') }}
-            className="text-sky-400 hover:underline"
+            className="text-gold hover:underline"
           >
             {mode === 'login' ? "S'inscrire" : 'Se connecter'}
           </button>
@@ -81,6 +82,7 @@ export default function App() {
   const [user, setUser]       = useState(undefined)
   const [profile, setProfile] = useState(null)
   const [tab, setTab]         = useState('seance')
+  const online                = useOnlineStatus()
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
@@ -110,7 +112,7 @@ export default function App() {
 
   if (user === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-night">
         <Spinner size="lg" />
       </div>
     )
@@ -123,17 +125,26 @@ export default function App() {
   return (
     <>
       <ConfirmHost />
-      <div className="min-h-screen bg-slate-900 flex flex-col">
-        <header className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-3">
+      {!online && (
+        <div
+          className="fixed z-40 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 bg-surface/90 backdrop-blur border border-gold/40 text-gold"
+          style={{ top: 'calc(env(safe-area-inset-top) + 10px)' }}
+        >
+          <span className="w-2 h-2 rounded-full bg-gold" />
+          Hors ligne — les modifications seront synchronisées au retour du reseau
+        </div>
+      )}
+      <div className="min-h-screen bg-night flex flex-col">
+        <header className="sticky top-0 z-30 bg-night/80 backdrop-blur border-b border-line px-4 py-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
           <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <h1 className="font-bold text-slate-100 flex items-center gap-2">
+            <h1 className="font-bold text-text flex items-center gap-2">
               <span>💪</span> Ma Discipline
             </h1>
-            <span className="text-xs text-slate-500 truncate max-w-xs">{user.email}</span>
+            <span className="text-xs text-muted truncate max-w-xs">{user.email}</span>
           </div>
         </header>
 
-        <div className="sticky top-[57px] z-20 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-2">
+        <div className="sticky top-[57px] z-20 bg-night/80 backdrop-blur border-b border-line px-4 py-2">
           <div className="max-w-2xl mx-auto">
             <Tabs tabs={TABS} active={tab} onChange={setTab} />
           </div>

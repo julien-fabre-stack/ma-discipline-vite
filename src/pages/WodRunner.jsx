@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button, Card } from '../components/UI'
 import { useBeep } from '../hooks/useBeep'
+import { useWakeLock } from '../hooks/useWakeLock'
 import { formatDuration } from '../lib/utils'
 
 const MODES = [
@@ -18,6 +19,8 @@ export default function WodRunner({ onClose }) {
   const [rounds, setRounds]     = useState(0)
   const intervalRef             = useRef(null)
   const beep                    = useBeep()
+
+  useWakeLock(running)
 
   useEffect(() => {
     clearInterval(intervalRef.current)
@@ -49,14 +52,14 @@ export default function WodRunner({ onClose }) {
   if (!mode) return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-100">WOD Runner</h2>
+        <h2 className="font-semibold text-text">WOD Runner</h2>
         <Button variant="ghost" onClick={onClose}>Fermer</Button>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {MODES.map(m => (
-          <Card key={m.id} className="cursor-pointer hover:border-sky-500 transition-colors text-center" onClick={() => setMode(m.id)}>
-            <p className="font-bold text-sky-400">{m.label}</p>
-            <p className="text-xs text-slate-400 mt-1">{m.desc}</p>
+          <Card key={m.id} className="cursor-pointer hover:border-ember transition-colors text-center" onClick={() => setMode(m.id)}>
+            <p className="font-bold text-gold">{m.label}</p>
+            <p className="text-xs text-muted mt-1">{m.desc}</p>
           </Card>
         ))}
       </div>
@@ -69,22 +72,22 @@ export default function WodRunner({ onClose }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-100">{MODES.find(m => m.id === mode)?.label}</h2>
+        <h2 className="font-semibold text-text">{MODES.find(m => m.id === mode)?.label}</h2>
         <Button variant="ghost" onClick={() => { reset(); setMode(null) }}>Retour</Button>
       </div>
       <Card className="text-center py-8">
-        {tabataPhase && <p className={'text-sm font-bold mb-2 ' + (tabataPhase === 'EFFORT' ? 'text-red-400' : 'text-sky-400')}>{tabataPhase}</p>}
-        <p className="text-6xl font-mono font-bold text-slate-100">{display}</p>
-        {mode === 'tabata' && <p className="text-slate-400 mt-2">Round {Math.floor(timer / 30) + 1}/8</p>}
-        {mode === 'amrap'  && <p className="text-slate-400 mt-2">Rounds : {rounds}</p>}
+        {tabataPhase && <p className={'text-sm font-bold mb-2 ' + (tabataPhase === 'EFFORT' ? 'text-danger' : 'text-gold')}>{tabataPhase}</p>}
+        <p className="text-6xl font-mono font-bold text-text">{display}</p>
+        {mode === 'tabata' && <p className="text-muted mt-2">Round {Math.floor(timer / 30) + 1}/8</p>}
+        {mode === 'amrap'  && <p className="text-muted mt-2">Rounds : {rounds}</p>}
       </Card>
       {(mode === 'amrap' || mode === 'emom') && (
         <div className="flex gap-2 items-center">
-          <label className="text-xs text-slate-400 whitespace-nowrap">Duree (min)</label>
+          <label className="text-xs text-muted whitespace-nowrap">Duree (min)</label>
           <input type="range" min="60" max="3600" step="60" value={duration}
             onChange={e => { setDuration(Number(e.target.value)); reset() }}
-            className="flex-1 accent-sky-500" />
-          <span className="text-xs text-sky-400 w-10 text-right">{duration / 60}min</span>
+            className="flex-1 accent-ember" />
+          <span className="text-xs text-gold w-10 text-right">{duration / 60}min</span>
         </div>
       )}
       {mode === 'amrap' && running && (

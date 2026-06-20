@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button, Card, ProgressBar } from '../components/UI'
 import { useBeep } from '../hooks/useBeep'
+import { useWakeLock } from '../hooks/useWakeLock'
 import { formatDuration } from '../lib/utils'
+import ExerciseImg from '../components/ExerciseImg'
 
 export default function Runner({ seance, onClose, onComplete }) {
   const [exIdx, setExIdx]     = useState(0)
@@ -15,6 +17,8 @@ export default function Runner({ seance, onClose, onComplete }) {
 
   const exercices = seance?.exercices || []
   const ex        = exercices[exIdx]
+
+  useWakeLock(true)
 
   useEffect(() => {
     const id = setInterval(() => setElapsed(e => e + 1), 1000)
@@ -62,8 +66,8 @@ export default function Runner({ seance, onClose, onComplete }) {
 
   if (!ex) return (
     <div className="flex flex-col items-center justify-center h-full gap-6 py-20">
-      <p className="font-semibold text-slate-100">Seance terminee !</p>
-      <p className="text-slate-400 text-sm">Duree : {formatDuration(elapsed)}</p>
+      <p className="font-semibold text-text">Seance terminee !</p>
+      <p className="text-muted text-sm">Duree : {formatDuration(elapsed)}</p>
       <Button onClick={() => onComplete?.(elapsed)}>Fermer</Button>
     </div>
   )
@@ -74,22 +78,24 @@ export default function Runner({ seance, onClose, onComplete }) {
     <div className="flex flex-col gap-4 pb-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-slate-400">Exercice {exIdx + 1}/{exercices.length}</p>
-          <h2 className="font-bold text-slate-100 text-lg">{ex.nom}</h2>
+          <p className="text-xs text-muted">Exercice {exIdx + 1}/{exercices.length}</p>
+          <h2 className="font-bold text-text text-lg">{ex.nom}</h2>
         </div>
         <div className="text-right">
-          <p className="text-xs text-slate-400">Temps total</p>
-          <p className="font-mono text-sky-400">{formatDuration(elapsed)}</p>
+          <p className="text-xs text-muted">Temps total</p>
+          <p className="font-mono text-gold">{formatDuration(elapsed)}</p>
         </div>
       </div>
+
+      <ExerciseImg name={ex.nom} className="w-full max-h-48 object-contain rounded-2xl bg-surface" />
 
       <Card className="text-center py-6">
         {phase === 'work' ? (
           <>
-            <p className="text-5xl font-bold text-slate-100">
-              {setIdx + 1}<span className="text-2xl text-slate-400">/{ex.series}</span>
+            <p className="text-5xl font-bold text-text">
+              {setIdx + 1}<span className="text-2xl text-muted">/{ex.series}</span>
             </p>
-            <p className="text-slate-400 mt-2">
+            <p className="text-muted mt-2">
               {ex.repsMin === ex.repsMax ? ex.repsMin : ex.repsMin + '-' + ex.repsMax} reps
               {ex.poids ? ' - ' + ex.poids + ' kg' : ''}
             </p>
@@ -99,9 +105,9 @@ export default function Runner({ seance, onClose, onComplete }) {
           </>
         ) : (
           <>
-            <p className="text-xs text-slate-400 mb-2">Repos</p>
-            <p className="text-5xl font-mono font-bold text-sky-400">{timer}s</p>
-            <ProgressBar value={restPct} max={100} color="sky" className="mt-4" />
+            <p className="text-xs text-muted mb-2">Repos</p>
+            <p className="text-5xl font-mono font-bold text-gold">{timer}s</p>
+            <ProgressBar value={restPct} max={100} color="ember" className="mt-4" />
             <Button variant="ghost" className="mt-4 text-xs" onClick={() => { setRunning(false); setPhase('work') }}>
               Passer
             </Button>
@@ -111,7 +117,7 @@ export default function Runner({ seance, onClose, onComplete }) {
 
       <div className="space-y-1">
         {exercices.map((e, i) => (
-          <div key={e.id || i} className={'flex items-center gap-2 p-2 rounded-lg text-sm ' + (i === exIdx ? 'bg-sky-900/40 text-sky-300' : i < exIdx ? 'text-slate-600' : 'text-slate-400')}>
+          <div key={e.id || i} className={'flex items-center gap-2 p-2 rounded-lg text-sm ' + (i === exIdx ? 'bg-ember/15 text-gold' : i < exIdx ? 'text-muted' : 'text-muted')}>
             <span>{i < exIdx ? 'OK' : i === exIdx ? '>' : 'o'}</span>
             <span className="flex-1 truncate">{e.nom}</span>
             <span className="text-xs">{e.series}x{e.repsMin}</span>
@@ -119,7 +125,7 @@ export default function Runner({ seance, onClose, onComplete }) {
         ))}
       </div>
 
-      <Button variant="ghost" onClick={onClose} className="text-slate-500 text-xs">Abandonner la seance</Button>
+      <Button variant="ghost" onClick={onClose} className="text-muted text-xs">Abandonner la seance</Button>
     </div>
   )
 }

@@ -2,12 +2,12 @@ export function Collapsible({ title, badge, open, onToggle, children }) {
   return (
     <div className="mb-3">
       <button onClick={onToggle} className="w-full flex items-center justify-between py-1.5">
-        <span className="text-xs tracking-widest uppercase text-slate-400">
+        <span className="text-xs tracking-widest uppercase text-muted">
           {title}
-          {badge != null && badge !== '' && <span className="text-yellow-400"> - {badge}</span>}
+          {badge != null && badge !== '' && <span className="text-gold"> - {badge}</span>}
         </span>
         <span
-          className="text-slate-400 text-xs transition-transform duration-300"
+          className="text-muted text-xs transition-transform duration-300"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           ▼

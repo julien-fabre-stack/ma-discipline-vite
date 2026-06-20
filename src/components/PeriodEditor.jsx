@@ -11,8 +11,8 @@ export default function PeriodEditor({ period, cats, kind, onSave, onCancel }) {
   const valid = p.catId && p.start && p.end && p.start <= p.end
 
   return (
-    <div className="rounded-2xl p-4 mb-3 bg-slate-800 border border-slate-700">
-      <p className="text-xs text-slate-400 mb-2">Categorie</p>
+    <div className="rounded-2xl p-4 mb-3 bg-surface border border-line">
+      <p className="text-xs text-muted mb-2">Categorie</p>
       <div className="flex gap-2 mb-3 flex-wrap">
         {cats.map(c => (
           <button key={c.id} onClick={() => setP({ ...p, catId: c.id })}
@@ -25,17 +25,17 @@ export default function PeriodEditor({ period, cats, kind, onSave, onCancel }) {
       </div>
       <div className="flex gap-2 mb-1">
         <div className="flex-1">
-          <p className="text-xs mb-1 text-slate-400">Debut</p>
+          <p className="text-xs mb-1 text-muted">Debut</p>
           <input type="date" value={p.start} onChange={e => setP({ ...p, start: e.target.value })}
-            className="w-full px-3 py-2.5 rounded-xl outline-none text-sm bg-slate-700 text-slate-100" />
+            className="w-full px-3 py-2.5 rounded-xl outline-none text-sm bg-surface-2 text-text" />
         </div>
         <div className="flex-1">
-          <p className="text-xs mb-1 text-slate-400">Fin</p>
+          <p className="text-xs mb-1 text-muted">Fin</p>
           <input type="date" value={p.end} onChange={e => setP({ ...p, end: e.target.value })}
-            className="w-full px-3 py-2.5 rounded-xl outline-none text-sm bg-slate-700 text-slate-100" />
+            className="w-full px-3 py-2.5 rounded-xl outline-none text-sm bg-surface-2 text-text" />
         </div>
       </div>
-      {!valid && <p className="text-xs mt-1 text-red-400">La date de fin doit etre apres ou egale a la date de debut.</p>}
+      {!valid && <p className="text-xs mt-1 text-danger">La date de fin doit etre apres ou egale a la date de debut.</p>}
       <div className="flex gap-2 mt-3">
         <Button variant="ghost" className="flex-1" onClick={onCancel}>Annuler</Button>
         <Button disabled={!valid} className="flex-[2]" onClick={() => onSave(p)}>Enregistrer</Button>
